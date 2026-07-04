@@ -63,12 +63,12 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex font-sans selection:bg-blue-100 selection:text-blue-900 relative">
+    <div className="min-h-screen bg-background text-foreground flex font-sans selection:bg-[#EEF5F2] selection:text-[#00836C] relative">
       
       {/* ─── Left Sidebar (Desktop) ─── */}
-      <aside className="hidden lg:flex flex-col w-56 bg-[#0a1829] text-slate-300 border-r border-slate-800 flex-shrink-0">
+      <aside className="hidden lg:flex flex-col w-56 bg-sidebar text-sidebar-foreground border-r border-[#00836C]/30 flex-shrink-0">
         {/* Logo Section */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800 bg-[#071322]">
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-[#00836C]/30 bg-black/10">
           <IdbiLogo />
         </div>
 
@@ -77,10 +77,10 @@ export default function Home() {
           {sidebarLinks.map((link, idx) => (
             <button
               key={idx}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all duration-150 cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-150 cursor-pointer ${
                 link.active 
-                  ? 'bg-blue-600 text-white font-bold' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                  ? 'bg-primary text-primary-foreground font-bold' 
+                  : 'text-slate-300 hover:text-white hover:bg-black/20'
               }`}
             >
               {link.icon}
@@ -90,13 +90,13 @@ export default function Home() {
         </nav>
 
         {/* Assistant/Help panel at bottom */}
-        <div className="p-4 border-t border-slate-800">
-          <div className="bg-[#112438] rounded-sm p-4 border border-slate-800/60">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
-              <HelpCircle className="h-4 w-4 text-blue-400" /> Need Help?
+        <div className="p-4 border-t border-[#00836C]/30">
+          <div className="bg-black/10 rounded-md p-4 border border-[#00836C]/30">
+            <div className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider mb-1">
+              <HelpCircle className="h-4 w-4 text-idbi-gold" /> Need Help?
             </div>
-            <p className="text-[11px] text-slate-400 leading-normal mb-3">Talk to Assistant</p>
-            <button className="w-full text-center py-2 bg-blue-600/20 hover:bg-blue-600/35 border border-blue-500/30 text-blue-400 text-xs font-bold rounded-sm transition-colors cursor-pointer">
+            <p className="text-[11px] text-slate-300 leading-normal mb-3">Talk to Assistant</p>
+            <button className="w-full text-center py-2 bg-transparent hover:bg-primary/20 border border-primary text-white text-xs font-bold rounded-full transition-colors cursor-pointer">
               Launch Underwriting Chat
             </button>
           </div>
@@ -107,10 +107,10 @@ export default function Home() {
       {isMobileSidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileSidebarOpen(false)} />
-          <aside className="relative flex flex-col w-56 bg-[#0a1829] text-slate-300 h-full">
-            <div className="h-16 flex items-center justify-between px-6 border-b border-[#0c1a30] bg-[#071322]">
+          <aside className="relative flex flex-col w-56 bg-sidebar text-sidebar-foreground h-full">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-[#00836C]/30 bg-black/10">
               <IdbiLogo />
-              <button onClick={() => setIsMobileSidebarOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setIsMobileSidebarOpen(false)} className="text-slate-300 hover:text-white cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -119,10 +119,10 @@ export default function Home() {
                 <button
                   key={idx}
                   onClick={() => setIsMobileSidebarOpen(false)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                     link.active 
-                      ? 'bg-blue-600 text-white font-bold' 
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                      ? 'bg-primary text-primary-foreground font-bold' 
+                      : 'text-slate-300 hover:text-white hover:bg-black/20'
                   }`}
                 >
                   {link.icon}
@@ -138,19 +138,19 @@ export default function Home() {
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         
         {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40">
+        <header className="h-[72px] bg-white border-b border-border flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-1 rounded-md text-slate-500 hover:bg-slate-100 cursor-pointer"
+              className="lg:hidden p-1 rounded-md text-slate-500 hover:bg-secondary cursor-pointer"
             >
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-950 tracking-tight leading-none">
+              <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight leading-none">
                 MSME Financial Health Card
               </h2>
-              <p className="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5 sm:mt-1">
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider mt-0.5 sm:mt-1">
                 AI-Powered Credit Intelligence & Underwriting Platform
               </p>
             </div>
@@ -158,26 +158,26 @@ export default function Home() {
 
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Last updated info */}
-            <span className="hidden md:inline-block text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+            <span className="hidden md:inline-block text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
               Last Updated: 24 May 2025, 10:30 AM
             </span>
 
             {/* Adjust Parameters Action Button */}
             <Button
               onClick={() => setIsDrawerOpen(true)}
-              className="gap-2 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-1.5 h-8 cursor-pointer"
+              className="gap-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs py-1.5 h-10 px-6 cursor-pointer"
             >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <SlidersHorizontal className="h-4 w-4" />
               <span>Adjust Parameters</span>
             </Button>
 
             {/* Profile badge / account */}
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-3 sm:pl-4">
+            <div className="flex items-center gap-2 border-l border-border pl-3 sm:pl-4">
               <span className="hidden sm:inline-block text-xs font-bold text-slate-700">ACME</span>
-              <div className="w-8 h-8 rounded-full bg-[#0a1829] text-white flex items-center justify-center font-bold text-xs cursor-pointer border border-slate-200 hover:bg-[#112438] transition-colors">
+              <div className="w-10 h-10 rounded-full bg-sidebar text-white flex items-center justify-center font-bold text-xs cursor-pointer hover:bg-sidebar/90 transition-colors">
                 AC
               </div>
-              <ChevronDown className="h-3 w-3 text-slate-400 cursor-pointer hidden sm:block" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground cursor-pointer hidden sm:block" />
             </div>
           </div>
         </header>
@@ -227,7 +227,7 @@ export default function Home() {
             <div className="h-16 border-b border-slate-200 px-6 flex items-center justify-between bg-slate-50">
               <div>
                 <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4 text-blue-600" /> Adjust Scoring Parameters
+                  <SlidersHorizontal className="h-4 w-4 text-primary" /> Adjust Scoring Parameters
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">Tweak dimension scores & data flags below</p>
               </div>
@@ -264,7 +264,7 @@ export default function Home() {
               <Button
                 variant="outline"
                 onClick={() => setIsDrawerOpen(false)}
-                className="rounded-sm border-slate-300 cursor-pointer text-xs"
+                className="rounded-full border-border hover:bg-secondary cursor-pointer text-xs"
               >
                 Cancel
               </Button>
@@ -273,7 +273,7 @@ export default function Home() {
                   setHasGenerated(true);
                   setIsDrawerOpen(false);
                 }}
-                className="rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold cursor-pointer text-xs px-6"
+                className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold cursor-pointer text-xs px-6"
               >
                 Apply & Compute Score
               </Button>

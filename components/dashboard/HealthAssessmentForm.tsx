@@ -23,7 +23,7 @@ export function HealthAssessmentForm({ scores, onScoreChange }: HealthAssessment
   };
 
   return (
-    <div className="space-y-5 bg-white p-4 border border-slate-200 rounded-sm">
+    <div className="space-y-5 bg-white p-4 border border-border rounded-md">
       <div>
         <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-1">Assessment Dimensions</h4>
         <p className="text-xs text-slate-400 font-semibold mb-4">Set scoring values (0-100) for credit evaluation</p>
@@ -43,7 +43,7 @@ export function HealthAssessmentForm({ scores, onScoreChange }: HealthAssessment
                 max="100"
                 value={String(scores[dim.key as keyof MSMEScores] ?? 0)}
                 onChange={(e) => handleInputChange(dim.key as keyof MSMEScores, e.target.value)}
-                className="w-16 text-right h-7 text-xs rounded-sm border-slate-300 focus-visible:ring-slate-500 font-semibold tabular-nums"
+                className="w-16 text-right h-7 text-xs rounded-md border-border focus-visible:ring-primary font-semibold tabular-nums"
               />
             </div>
             <Slider

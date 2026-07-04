@@ -14,8 +14,8 @@ interface DataConfidencePanelProps {
 
 export function DataConfidencePanel({ flags, onChange, confidenceScore }: DataConfidencePanelProps) {
   return (
-    <Card className="rounded-sm border-slate-200 shadow-sm bg-white">
-      <CardHeader className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+    <Card className="rounded-md border-border shadow-sm bg-white">
+      <CardHeader className="bg-secondary border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
@@ -36,15 +36,15 @@ export function DataConfidencePanel({ flags, onChange, confidenceScore }: DataCo
             <button
               key={src.key}
               onClick={() => onChange(src.key as keyof DataSourceFlags, !isAvailable)}
-              className={`w-full flex items-center justify-between p-3 rounded-sm border text-sm font-medium transition-colors cursor-pointer ${
+              className={`w-full flex items-center justify-between p-3 rounded-md border text-sm font-medium transition-colors cursor-pointer ${
                 isAvailable
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
-                  : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                  ? 'bg-[#16A34A]/10 border-[#16A34A]/20 text-[#16A34A] hover:bg-[#16A34A]/20'
+                  : 'bg-secondary border-border text-muted-foreground hover:bg-secondary/80'
               }`}
             >
               <span>{src.label}</span>
               {isAvailable
-                ? <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                ? <CheckCircle2 className="h-4 w-4 text-[#16A34A]" />
                 : <XCircle className="h-4 w-4 text-slate-300" />
               }
             </button>

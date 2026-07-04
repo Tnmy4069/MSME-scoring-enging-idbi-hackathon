@@ -86,32 +86,32 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Premium Eligible':  return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      case 'Growth Ready':      return 'text-blue-700 bg-blue-50 border-blue-200';
-      case 'Standard Eligible': return 'text-amber-700 bg-amber-50 border-amber-200';
-      case 'Limited Exposure':  return 'text-orange-700 bg-orange-50 border-orange-200';
-      default:                  return 'text-red-700 bg-red-50 border-red-200';
+      case 'Premium Eligible':  return 'text-[#16A34A] bg-[#16A34A]/10 border-[#16A34A]/20';
+      case 'Growth Ready':      return 'text-[#00836C] bg-[#00836C]/10 border-[#00836C]/20';
+      case 'Standard Eligible': return 'text-[#2563EB] bg-[#2563EB]/10 border-[#2563EB]/20';
+      case 'Limited Exposure':  return 'text-[#F59E0B] bg-[#F59E0B]/10 border-[#F59E0B]/20';
+      default:                  return 'text-[#DC2626] bg-[#DC2626]/10 border-[#DC2626]/20';
     }
   };
 
   const getStatusRingColor = (status: string) => {
     switch (status) {
-      case 'Premium Eligible':  return '#10b981';
-      case 'Growth Ready':      return '#3b82f6';
-      case 'Standard Eligible': return '#f59e0b';
-      case 'Limited Exposure':  return '#f97316';
-      default:                  return '#ef4444';
+      case 'Premium Eligible':  return '#16A34A';
+      case 'Growth Ready':      return '#00836C';
+      case 'Standard Eligible': return '#2563EB';
+      case 'Limited Exposure':  return '#F59E0B';
+      default:                  return '#DC2626';
     }
   };
 
   const getDecisionBadge = (decision: string) => {
     switch (decision) {
       case 'Approvable':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        return 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/20';
       case 'Conditional':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
+        return 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20';
       default:
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/20';
     }
   };
 
@@ -130,18 +130,11 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
       <div className="flex flex-col items-center">
         <div className="relative w-36 h-20">
           <svg className="w-full h-full" viewBox="0 0 120 70">
-            <defs>
-              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#10b981" />   {/* Green */}
-                <stop offset="60%" stopColor="#f59e0b" />  {/* Yellow/Orange */}
-                <stop offset="100%" stopColor="#ef4444" /> {/* Red/Orange */}
-              </linearGradient>
-            </defs>
             {/* Background track */}
             <path
               d="M 15 60 A 45 45 0 0 1 105 60"
               fill="none"
-              stroke="#f1f5f9"
+              stroke="#D7E2DD"
               strokeWidth="9"
               strokeLinecap="round"
             />
@@ -149,7 +142,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
             <path
               d="M 15 60 A 45 45 0 0 1 105 60"
               fill="none"
-              stroke="url(#gaugeGradient)"
+              stroke="#00836C"
               strokeWidth="9"
               strokeLinecap="round"
               strokeDasharray="141.37"
@@ -215,16 +208,16 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
     <div className="space-y-6">
       
       {/* Action Header Banner */}
-      <div className="flex justify-between items-center bg-white px-6 py-3.5 border border-slate-200 rounded-sm">
+      <div className="flex justify-between items-center bg-white px-6 py-3.5 border border-border rounded-md">
         <div className="flex items-center gap-2.5 text-slate-500 text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck className="h-4.5 w-4.5 text-blue-600" /> Credit Decisioning Suite
+          <ShieldCheck className="h-4.5 w-4.5 text-primary" /> Credit Decisioning Suite
         </div>
         <Button
           onClick={handleDownloadPDF}
           disabled={isExporting}
           variant="outline"
           size="sm"
-          className="gap-2 rounded-sm border-blue-200 hover:bg-blue-50 text-blue-700 font-bold"
+          className="gap-2 rounded-full border-primary hover:bg-secondary text-primary font-bold"
         >
           <Download className="h-4 w-4" />
           {isExporting ? 'Compiling File...' : 'Download Report'}
@@ -234,27 +227,27 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
       <div ref={reportRef} className="bg-slate-50 p-6 rounded-sm space-y-6">
 
         {/* ─── Top Level Credit Assessment Result Banner ─── */}
-        <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md">
+        <div className="bg-sidebar border border-sidebar-border rounded-md p-5 text-sidebar-foreground flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Assessment Decision Profile</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Assessment Decision Profile</span>
             <div className="flex items-center gap-3">
               <h3 className="text-xl font-bold">Credit Underwriting Decision:</h3>
-              <span className={`px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-wider border ${getDecisionBadge(result.decision)}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getDecisionBadge(result.decision)}`}>
                 {result.decision}
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-6 sm:gap-10 border-t border-slate-800 md:border-t-0 pt-3 md:pt-0 w-full md:w-auto">
+          <div className="flex items-center gap-6 sm:gap-10 border-t border-[#00836C]/30 md:border-t-0 pt-3 md:pt-0 w-full md:w-auto">
             <div>
-              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Risk Classification</div>
+              <div className="text-[9px] text-slate-300 font-bold uppercase tracking-wider">Risk Classification</div>
               <div className={`text-base font-bold uppercase tracking-wide mt-0.5 ${
-                result.riskLevel === 'Minimal' || result.riskLevel === 'Low' ? 'text-emerald-400' :
-                result.riskLevel === 'Medium' ? 'text-amber-400' : 'text-red-400'
+                result.riskLevel === 'Minimal' || result.riskLevel === 'Low' ? 'text-[#16A34A]' :
+                result.riskLevel === 'Medium' ? 'text-[#F59E0B]' : 'text-[#DC2626]'
               }`}>{result.riskLevel} Risk</div>
             </div>
-            <div className="border-l border-slate-800 pl-6 sm:pl-10">
-              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Alternate Data Confidence</div>
-              <div className="text-base font-bold text-slate-200 mt-0.5">{result.dataConfidenceScore}%</div>
+            <div className="border-l border-[#00836C]/30 pl-6 sm:pl-10">
+              <div className="text-[9px] text-slate-300 font-bold uppercase tracking-wider">Alternate Data Confidence</div>
+              <div className="text-base font-bold text-white mt-0.5">{result.dataConfidenceScore}%</div>
             </div>
           </div>
         </div>
@@ -263,7 +256,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           
           {/* Credit Confidence Score card (Spans 2 columns) */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white sm:col-span-2 p-5">
+          <Card className="rounded-md border-border shadow-none bg-white sm:col-span-2 p-5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
               Credit Confidence Score <InfoIcon />
             </div>
@@ -292,7 +285,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </Card>
 
           {/* Lending Eligibility Status */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
               Lending Eligibility <InfoIcon />
             </div>
@@ -311,13 +304,13 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </Card>
 
           {/* Alternate Data Confidence */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
               Alternate Data Confidence <InfoIcon />
             </div>
             <div className="my-3 flex items-center gap-3">
-              <div className="p-2.5 rounded-sm bg-blue-50">
-                <FileText className="h-6 w-6 text-blue-600" />
+              <div className="p-2.5 rounded-md bg-[#2563EB]/10">
+                <FileText className="h-6 w-6 text-[#2563EB]" />
               </div>
               <div>
                 <div className="text-2xl font-black text-slate-900">{result.dataConfidenceScore}%</div>
@@ -330,35 +323,35 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </Card>
 
           {/* Recommended Limit & Rationale */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
               Recommended Credit Limit <InfoIcon />
             </div>
             <div className="my-3 flex items-center gap-2.5">
-              <div className="p-2.5 rounded-sm bg-emerald-50">
-                <span className="text-lg font-bold text-emerald-600">₹</span>
+              <div className="p-2.5 rounded-md bg-[#00836C]/10">
+                <span className="text-lg font-bold text-primary">₹</span>
               </div>
               <div>
                 <div className="text-lg font-bold text-slate-800">{result.recommendedCreditLimit}</div>
                 <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Approved Limit CAP</div>
               </div>
             </div>
-            <div className="text-[10px] text-slate-400 bg-slate-50 border border-slate-100 p-1.5 rounded-sm leading-normal">
-              <span className="font-bold text-slate-600">Rationale: </span>
+            <div className="text-[10px] text-slate-500 bg-secondary border border-border p-1.5 rounded-md leading-normal">
+              <span className="font-bold text-slate-700">Rationale: </span>
               {result.creditLimitRationale.scoreRange} Range | {result.creditLimitRationale.riskCategory}
             </div>
           </Card>
 
           {/* Risk Penalty */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
               Risk Penalty <InfoIcon />
             </div>
             <div className="my-3 flex items-center gap-3">
-              <div className="p-2.5 rounded-sm bg-red-50">
-                <BadgeAlert className="h-6 w-6 text-red-500" />
+              <div className="p-2.5 rounded-md bg-[#DC2626]/10">
+                <BadgeAlert className="h-6 w-6 text-[#DC2626]" />
               </div>
-              <div className="text-xl font-bold text-red-600">
+              <div className="text-xl font-bold text-[#DC2626]">
                 {result.riskPenalty > 0 ? `-${result.riskPenalty.toFixed(2)}` : '0.00'}
               </div>
             </div>
@@ -370,7 +363,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
         </div>
 
         {/* ─── Lending Spectrum Visualization ─── */}
-        <Card className="rounded-sm border-slate-200 shadow-none bg-white p-5">
+        <Card className="rounded-md border-border shadow-none bg-white p-5">
           <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Underwriting Spectrum Position</h4>
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-center text-xs">
             {spectrumSteps.map((step) => {
@@ -378,14 +371,14 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
               return (
                 <div 
                   key={step.label}
-                  className={`p-3 rounded-sm border transition-all duration-300 ${
+                  className={`p-3 rounded-md border transition-all duration-300 ${
                     isActive 
-                      ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm' 
-                      : 'bg-slate-50 border-slate-200 text-slate-500 font-semibold'
+                      ? 'bg-primary border-primary text-white font-bold shadow-sm' 
+                      : 'bg-secondary border-border text-muted-foreground font-semibold'
                   }`}
                 >
                   <div className="truncate">{step.label}</div>
-                  <div className={`text-[10px] mt-1 ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>
+                  <div className={`text-[10px] mt-1 ${isActive ? 'text-white/80' : 'text-slate-400'}`}>
                     {step.min}-{step.max} Pts
                   </div>
                 </div>
@@ -398,7 +391,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Score Composition Table */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white lg:col-span-7 p-6">
+          <Card className="rounded-md border-border shadow-none bg-white lg:col-span-7 p-6">
             <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide mb-4">
               Score Composition <InfoIcon />
             </h3>
@@ -423,33 +416,33 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
                     </span>
                     <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
                       <div 
-                        className={`h-full rounded-full ${b.isRisk ? 'bg-red-500' : 'bg-blue-600'}`}
+                        className={`h-full rounded-full ${b.isRisk ? 'bg-[#DC2626]' : 'bg-primary'}`}
                         style={{ width: `${b.rawScore}%` }}
                       />
                     </div>
                   </div>
 
-                  <div className={`col-span-3 text-right font-bold tabular-nums ${b.isRisk ? 'text-red-500' : 'text-emerald-600'}`}>
+                  <div className={`col-span-3 text-right font-bold tabular-nums ${b.isRisk ? 'text-[#DC2626]' : 'text-[#16A34A]'}`}>
                     {b.earnedPoints > 0 ? '+' : ''}{b.earnedPoints.toFixed(2)}
                   </div>
                 </div>
               ))}
 
-              <div className="bg-slate-50 border border-slate-200 rounded-sm p-3 flex justify-between items-center text-sm font-bold text-slate-800 mt-4">
+              <div className="bg-secondary border border-border rounded-md p-3 flex justify-between items-center text-sm font-bold text-slate-800 mt-4">
                 <span>Credit Confidence Score</span>
                 <span className="text-base text-slate-900">{result.score.toFixed(2)} <span className="text-xs text-slate-400 font-medium">/100</span></span>
               </div>
 
               <div className="flex justify-between text-[11px] font-bold text-slate-500 pt-1">
-                <div>Total Positive Contribution: <span className="text-emerald-600">+{result.positiveTotal.toFixed(2)}</span></div>
-                <div>Total Risk Penalty: <span className="text-red-500">-{result.riskPenalty.toFixed(2)}</span></div>
-                <div>Final Score: <span className="text-emerald-600">{result.score.toFixed(2)}/100</span></div>
+                <div>Total Positive Contribution: <span className="text-[#16A34A]">+{result.positiveTotal.toFixed(2)}</span></div>
+                <div>Total Risk Penalty: <span className="text-[#DC2626]">-{result.riskPenalty.toFixed(2)}</span></div>
+                <div>Final Score: <span className="text-[#16A34A]">{result.score.toFixed(2)}/100</span></div>
               </div>
             </div>
           </Card>
 
           {/* Positive Drivers & Risk Drivers Card */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white lg:col-span-5 p-6 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white lg:col-span-5 p-6 flex flex-col justify-between">
             <div className="space-y-6">
               <div>
                 <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide mb-1">
@@ -460,7 +453,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
 
               {/* Positive Drivers Column */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+                <h4 className="text-xs font-bold text-[#16A34A] uppercase tracking-wider flex items-center gap-1">
                   <ArrowUpRight className="h-4 w-4" /> Positive Drivers (Max Points)
                 </h4>
                 <div className="space-y-2.5">
@@ -468,10 +461,10 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
                     <div key={driver.key} className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold text-slate-700">
                         <span>{driver.label}</span>
-                        <span className="text-emerald-700 font-bold">+{driver.earnedPoints.toFixed(2)} / {driver.maxPoints} Pts</span>
+                        <span className="text-[#16A34A] font-bold">+{driver.earnedPoints.toFixed(2)} / {driver.maxPoints} Pts</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(driver.earnedPoints / driver.maxPoints) * 100}%` }} />
+                        <div className="h-full bg-[#16A34A] rounded-full" style={{ width: `${(driver.earnedPoints / driver.maxPoints) * 100}%` }} />
                       </div>
                     </div>
                   ))}
@@ -480,17 +473,17 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
 
               {/* Risk Drivers Column */}
               <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-bold text-red-600 uppercase tracking-wider flex items-center gap-1">
+                <h4 className="text-xs font-bold text-[#DC2626] uppercase tracking-wider flex items-center gap-1">
                   <ArrowDownRight className="h-4 w-4" /> Risk Drivers (Max Penalty)
                 </h4>
                 {riskDriver && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold text-slate-700">
                       <span>{riskDriver.label} Deduction</span>
-                      <span className="text-red-700 font-bold">-{result.riskPenalty.toFixed(2)} / {RISK_MAX_PENALTY} Pts</span>
+                      <span className="text-[#DC2626] font-bold">-{result.riskPenalty.toFixed(2)} / {RISK_MAX_PENALTY} Pts</span>
                     </div>
                     <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500 rounded-full" style={{ width: `${(result.riskPenalty / RISK_MAX_PENALTY) * 100}%` }} />
+                      <div className="h-full bg-[#DC2626] rounded-full" style={{ width: `${(result.riskPenalty / RISK_MAX_PENALTY) * 100}%` }} />
                     </div>
                   </div>
                 )}
@@ -504,7 +497,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Why Bank Should Lend Card */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-5 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white p-5 flex flex-col justify-between">
             <div>
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide mb-4">
                 Why Bank Should Lend <InfoIcon />
@@ -513,14 +506,14 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
                 {result.whyBankShouldLend.length > 0 ? (
                   result.whyBankShouldLend.map((signal, idx) => (
                     <div key={idx} className="flex items-start gap-3">
-                      <div className="bg-emerald-50 p-1.5 rounded-full mt-0.5">
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      <div className="bg-[#16A34A]/10 p-1.5 rounded-full mt-0.5">
+                        <Check className="h-3.5 w-3.5 text-[#16A34A]" />
                       </div>
                       <p className="text-xs font-semibold text-slate-700 leading-normal">{signal}</p>
                     </div>
                   ))
                 ) : (
-                  <div className="flex items-center gap-2 p-3 text-xs bg-slate-50 border border-slate-100 rounded-sm text-slate-500">
+                  <div className="flex items-center gap-2 p-3 text-xs bg-secondary border border-border rounded-md text-slate-500">
                     <Info className="h-4 w-4" /> No positive indicators scored above threshold.
                   </div>
                 )}
@@ -532,28 +525,28 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </Card>
 
           {/* Credit Decision Explanation */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-5 flex flex-col justify-between">
+          <Card className="rounded-md border-border shadow-none bg-white p-5 flex flex-col justify-between">
             <div>
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide mb-4">
                 Credit Decision Explanation <InfoIcon />
               </h3>
               <div className="space-y-4 text-xs leading-relaxed text-slate-700 font-medium">
                 <div className="flex gap-2.5 items-start">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0" />
-                  <p><span className="font-bold text-slate-800 uppercase tracking-wider text-[9px] block mb-0.5 text-emerald-700">Qualification Profile</span>{result.decisionExplanation.qualification}</p>
+                  <div className="w-1.5 h-1.5 bg-[#16A34A] rounded-full mt-1.5 flex-shrink-0" />
+                  <p><span className="font-bold text-slate-800 uppercase tracking-wider text-[9px] block mb-0.5 text-[#16A34A]">Qualification Profile</span>{result.decisionExplanation.qualification}</p>
                 </div>
                 <div className="flex gap-2.5 items-start">
-                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 flex-shrink-0" />
-                  <p><span className="font-bold text-slate-800 uppercase tracking-wider text-[9px] block mb-0.5 text-red-700">Remaining Risk Vectors</span>{result.decisionExplanation.remainingRisks}</p>
+                  <div className="w-1.5 h-1.5 bg-[#DC2626] rounded-full mt-1.5 flex-shrink-0" />
+                  <p><span className="font-bold text-slate-800 uppercase tracking-wider text-[9px] block mb-0.5 text-[#DC2626]">Remaining Risk Vectors</span>{result.decisionExplanation.remainingRisks}</p>
                 </div>
                 <div className="flex gap-2.5 items-start">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
-                  <p><span className="font-bold text-slate-800 uppercase tracking-wider text-[9px] block mb-0.5 text-blue-700">Recommended Exposure Caps</span>{result.decisionExplanation.recommendedExposure}</p>
+                  <div className="w-1.5 h-1.5 bg-[#2563EB] rounded-full mt-1.5 flex-shrink-0" />
+                  <p><span className="font-bold text-slate-800 uppercase tracking-wider text-[9px] block mb-0.5 text-[#2563EB]">Recommended Exposure Caps</span>{result.decisionExplanation.recommendedExposure}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-blue-50 border border-blue-100 rounded-sm p-3 mt-4 text-[11px] text-blue-800 leading-normal">
+            <div className="bg-[#2563EB]/10 border border-[#2563EB]/20 rounded-md p-3 mt-4 text-[11px] text-[#2563EB] leading-normal">
               Overall decision is <span className="font-bold">{result.decision}</span>. Suitable for <span className="font-bold">{result.lendingRecommendation}</span>.
             </div>
           </Card>
@@ -561,7 +554,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
         </div>
 
         {/* ─── Credit Improvement Simulator Card ─── */}
-        <Card className="rounded-sm border-slate-200 shadow-none bg-white p-6">
+        <Card className="rounded-md border-border shadow-none bg-white p-6">
           <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Credit Improvement Simulator</h3>
@@ -570,11 +563,11 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
             <div className="flex items-center gap-4 text-xs font-bold">
               <div className="text-right">
                 <div className="text-slate-400 uppercase tracking-wider text-[9px]">Simulated Score</div>
-                <div className="text-lg text-blue-600 font-extrabold">{simResult.score.toFixed(2)}</div>
+                <div className="text-lg text-primary font-extrabold">{simResult.score.toFixed(2)}</div>
               </div>
               <div className="text-right border-l border-slate-200 pl-4">
                 <div className="text-slate-400 uppercase tracking-wider text-[9px]">Simulated Limit</div>
-                <div className="text-lg text-emerald-600 font-extrabold">{simResult.recommendedCreditLimit}</div>
+                <div className="text-lg text-[#16A34A] font-extrabold">{simResult.recommendedCreditLimit}</div>
               </div>
             </div>
           </div>
@@ -613,12 +606,12 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap justify-between items-center gap-4 text-xs font-semibold text-slate-500">
-            <div>Current Tier: <span className="text-slate-800 font-bold">{result.lendingEligibilityStatus}</span> &rarr; Simulated Tier: <span className="text-blue-600 font-bold">{simResult.lendingEligibilityStatus}</span></div>
+            <div>Current Tier: <span className="text-slate-800 font-bold">{result.lendingEligibilityStatus}</span> &rarr; Simulated Tier: <span className="text-primary font-bold">{simResult.lendingEligibilityStatus}</span></div>
             <Button 
               size="sm"
               variant="outline"
               onClick={() => setSimScores(scores)}
-              className="rounded-sm text-[10px] h-7 border-slate-300"
+              className="rounded-full text-[10px] h-7 border-border hover:bg-secondary"
             >
               Reset Simulator
             </Button>

@@ -7,8 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Segoe UI', 'Segoe UI Variable', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Cascadia Code', 'Consolas', monospace;
+  --font-sans: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -18,11 +18,15 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+  
+  --color-idbi-green: #00836C;
+  --color-idbi-deep-green: #00614F;
+  --color-idbi-gold: #F4B400;
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-error: #DC2626;
+  --color-info: #2563EB;
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -39,49 +43,45 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
 }
 
 /* ─── Light Mode — standard hex/hsl (html2canvas compatible) ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #09090b;
-  --card: #ffffff;
-  --card-foreground: #09090b;
-  --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #ef4444;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #a1a1aa;
-  --chart-1: #d4d4d8;
-  --chart-2: #71717a;
-  --chart-3: #52525b;
-  --chart-4: #3f3f46;
-  --chart-5: #27272a;
-  --radius: 0.625rem;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #09090b;
-  --sidebar-primary: #18181b;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #a1a1aa;
+  --background: #F8FAF9;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #00836C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EEF5F2;
+  --secondary-foreground: #00836C;
+  --muted: #EEF5F2;
+  --muted-foreground: #9CA3AF;
+  --accent: #EEF5F2;
+  --accent-foreground: #00836C;
+  --destructive: #DC2626;
+  --border: #D7E2DD;
+  --input: #D7E2DD;
+  --ring: #00836C;
+  
+  --radius: 12px;
+  --sidebar: #00614F;
+  --sidebar-foreground: #F8FAF9;
+  --sidebar-primary: #00836C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #00836C;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #00614F;
+  --sidebar-ring: #00836C;
 }
 
 /* ─── Dark Mode ─── */
@@ -92,31 +92,26 @@
   --card-foreground: #fafafa;
   --popover: #18181b;
   --popover-foreground: #fafafa;
-  --primary: #e4e4e7;
-  --primary-foreground: #18181b;
+  --primary: #00836C;
+  --primary-foreground: #FFFFFF;
   --secondary: #27272a;
   --secondary-foreground: #fafafa;
   --muted: #27272a;
   --muted-foreground: #a1a1aa;
   --accent: #27272a;
   --accent-foreground: #fafafa;
-  --destructive: #f87171;
+  --destructive: #DC2626;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
-  --ring: #71717a;
-  --chart-1: #d4d4d8;
-  --chart-2: #71717a;
-  --chart-3: #52525b;
-  --chart-4: #3f3f46;
-  --chart-5: #27272a;
+  --ring: #00836C;
   --sidebar: #18181b;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #3b82f6;
+  --sidebar-primary: #00836C;
   --sidebar-primary-foreground: #fafafa;
   --sidebar-accent: #27272a;
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #71717a;
+  --sidebar-ring: #00836C;
 }
 
 @layer base {
@@ -127,6 +122,6 @@
     @apply bg-background text-foreground;
   }
   html {
-    font-family: 'Segoe UI', 'Segoe UI Variable', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
   }
 }
