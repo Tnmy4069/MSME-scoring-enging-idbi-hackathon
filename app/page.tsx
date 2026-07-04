@@ -291,12 +291,11 @@ export default function Home() {
 function IdbiLogo() {
   return (
     <div className="flex items-center gap-2.5">
-      {/* Orange circle with a white inset graphic matching IDBI brand structure */}
-      <svg className="w-7 h-7 flex-shrink-0" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="48" fill="#f05a28" />
-        <circle cx="50" cy="50" r="32" fill="#ffffff" />
-        <path d="M 50 18 A 32 32 0 0 1 82 50 L 50 50 Z" fill="#f05a28" />
-      </svg>
+      <img
+        src="https://www.logoshape.com/wp-content/uploads/2024/09/idbi-icon-vector_logoshape.png"
+        alt="IDBI Logo"
+        className="w-7 h-7 flex-shrink-0 object-contain"
+      />
       <div className="flex flex-col">
         <span className="text-white text-lg font-black tracking-wider leading-none">IDBI</span>
         <span className="text-[7px] text-[#f05a28] tracking-widest font-black leading-none mt-1">BANK</span>
