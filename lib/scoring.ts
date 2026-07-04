@@ -1,12 +1,6 @@
 import { MSMEScores, HealthResult, DataSourceFlags, ScoreBreakdownItem, Contributor } from "./types";
 
 // ─── Dimension configuration ─────────────────────────────────────────────────
-// Every point is visible. No hidden weights. No multipliers.
-//
-//   Max positive score  = 15 + 20 + 15 + 10 + 15 + 10 + 15 = 100
-//   Max risk penalty    = 20
-//   Score range         = [0, 100]  (clamped)
-
 export const DIMENSION_CONFIG = [
   { key: 'businessActivity',     label: 'Business Activity',     maxPoints: 15 },
   { key: 'cashFlowHealth',       label: 'Cash Flow Health',      maxPoints: 20 },
@@ -19,7 +13,6 @@ export const DIMENSION_CONFIG = [
 
 export const RISK_MAX_PENALTY = 20;
 
-// Also export flat list for radar chart / other legacy uses
 export const DIMENSIONS = [
   ...DIMENSION_CONFIG,
   { key: 'riskIndicators', label: 'Risk Indicators', maxPoints: 0 },
@@ -43,8 +36,6 @@ export const CREDIT_LIMIT_CONFIG = [
 ];
 
 // ─── Individual contribution calculators ─────────────────────────────────────
-// Formula: rawScore × maxPoints / 100
-
 export function calculateBusinessActivityContribution(raw: number): number {
   return Number((raw * 15 / 100).toFixed(2));
 }
@@ -73,20 +64,11 @@ export function calculateGrowthContribution(raw: number): number {
   return Number((raw * 15 / 100).toFixed(2));
 }
 
-// ─── Risk penalty ────────────────────────────────────────────────────────────
-// Higher Risk Indicators = MORE penalty (more risk = lower score)
-// riskPenalty = riskIndicators × 20 / 100
-// Examples:
-//   riskIndicators = 100 → penalty = 20  (maximum deduction)
-//   riskIndicators = 50  → penalty = 10
-//   riskIndicators = 0   → penalty = 0   (no deduction)
-
 export function calculateRiskPenalty(riskIndicators: number): number {
   return Number((riskIndicators * RISK_MAX_PENALTY / 100).toFixed(2));
 }
 
 // ─── Credit Confidence Score ─────────────────────────────────────────────────
-
 export function calculateCreditConfidenceScore(scores: MSMEScores): {
   breakdown: ScoreBreakdownItem[];
   positiveTotal: number;
@@ -134,14 +116,27 @@ export function calculateCreditConfidenceScore(scores: MSMEScores): {
   return { breakdown, positiveTotal, riskPenalty, score };
 }
 
-// ─── Status & recommendations ────────────────────────────────────────────────
+// ─── Status & Decisioning ──────────────────────────────────────────────────
+export function getLendingEligibilityStatus(score: number): 'Premium Eligible' | 'Growth Ready' | 'Standard Eligible' | 'Limited Exposure' | 'Manual Review' {
+  if (score >= 90) return 'Premium Eligible';
+  if (score >= 75) return 'Growth Ready';
+  if (score >= 60) return 'Standard Eligible';
+  if (score >= 40) return 'Limited Exposure';
+  return 'Manual Review';
+}
 
-export function getHealthStatus(score: number): string {
-  if (score >= 90) return 'Excellent';
-  if (score >= 75) return 'Good';
-  if (score >= 60) return 'Fair';
-  if (score >= 40) return 'Weak';
-  return 'High Risk';
+export function getUnderwritingDecision(score: number): 'Approvable' | 'Conditional' | 'Review Required' {
+  if (score >= 75) return 'Approvable';
+  if (score >= 40) return 'Conditional';
+  return 'Review Required';
+}
+
+export function getRiskLevel(score: number): 'Minimal' | 'Low' | 'Medium' | 'High' | 'Critical' {
+  if (score >= 90) return 'Minimal';
+  if (score >= 75) return 'Low';
+  if (score >= 60) return 'Medium';
+  if (score >= 40) return 'High';
+  return 'Critical';
 }
 
 export function getLendingRecommendation(score: number): string {
@@ -159,16 +154,13 @@ export function getRecommendedCreditLimit(score: number): string {
   return 'Manual Review Required';
 }
 
-// ─── Data confidence ─────────────────────────────────────────────────────────
-
 export function calculateDataConfidence(flags: DataSourceFlags): number {
   const total = Object.keys(flags).length;
   const available = Object.values(flags).filter(Boolean).length;
   return Math.round((available / total) * 100);
 }
 
-// ─── Contributors ─────────────────────────────────────────────────────────────
-
+// ─── Positive / Negative Contributors ─────────────────────────────────────────
 export function getPositiveContributors(breakdown: ScoreBreakdownItem[]): Contributor[] {
   return breakdown
     .filter(b => !b.isRisk)
@@ -185,8 +177,6 @@ export function getPositiveContributors(breakdown: ScoreBreakdownItem[]): Contri
 
 export function getNegativeContributors(breakdown: ScoreBreakdownItem[]): Contributor[] {
   const negatives: Contributor[] = [];
-
-  // Risk penalty is always first if it exists
   const risk = breakdown.find(b => b.isRisk);
   if (risk && risk.earnedPoints < 0) {
     negatives.push({
@@ -195,8 +185,6 @@ export function getNegativeContributors(breakdown: ScoreBreakdownItem[]): Contri
       description: `Elevated risk signals (${risk.rawScore}/100)`,
     });
   }
-
-  // Weakest positive contributors
   const weakPositives = breakdown
     .filter(b => !b.isRisk)
     .sort((a, b) => a.earnedPoints - b.earnedPoints)
@@ -206,11 +194,22 @@ export function getNegativeContributors(breakdown: ScoreBreakdownItem[]): Contri
       impact: b.earnedPoints,
       description: `Weak ${b.label.toLowerCase()} (only +${b.earnedPoints.toFixed(1)} of max ${b.maxPoints})`,
     }));
-
   return [...negatives, ...weakPositives].slice(0, 3);
 }
 
-// ─── Explainability ───────────────────────────────────────────────────────────
+// ─── Underwriting Workbench Explanations ──────────────────────────────────────
+export function getWhyBankShouldLend(breakdown: ScoreBreakdownItem[]): string[] {
+  return breakdown
+    .filter(b => !b.isRisk && b.earnedPoints >= b.maxPoints * 0.7)
+    .sort((a, b) => b.earnedPoints - a.earnedPoints)
+    .slice(0, 3)
+    .map(b => {
+      if (b.key === 'cashFlowHealth') return "Strong operational cash flow ensures highly robust repayment capacity.";
+      if (b.key === 'complianceScore') return "Flawless compliance record reduces regulatory and legal lending friction.";
+      if (b.key === 'businessStability') return "Established business history supports long-term operational stability.";
+      return `Solid contribution from ${b.label.toLowerCase()} (+${b.earnedPoints.toFixed(1)} pts) strengthens risk posture.`;
+    });
+}
 
 export function generateExplanation(
   scores: MSMEScores,
@@ -218,62 +217,48 @@ export function generateExplanation(
   score: number,
   lendingRecommendation: string,
 ): string {
-  const parts: string[] = [];
-
-  // Top 2 positive contributions
-  const top2 = breakdown
-    .filter(b => !b.isRisk)
-    .sort((a, b) => b.earnedPoints - a.earnedPoints)
-    .slice(0, 2);
-
-  if (top2.length >= 2) {
-    parts.push(
-      `The business demonstrates strong ${top2[0].label.toLowerCase()} (+${top2[0].earnedPoints.toFixed(1)}) and ${top2[1].label.toLowerCase()} (+${top2[1].earnedPoints.toFixed(1)}) — the two largest contributors to creditworthiness.`
-    );
-  }
-
-  // Mid-range contributors
-  const midRange = breakdown
-    .filter(b => !b.isRisk && b.earnedPoints >= b.maxPoints * 0.5 && b.earnedPoints < b.maxPoints * 0.8);
-  if (midRange.length > 0) {
-    const names = midRange.map(b => b.label.toLowerCase()).join(', ');
-    parts.push(`${midRange.length > 1 ? 'Areas' : 'The area'} of ${names} ${midRange.length > 1 ? 'show' : 'shows'} acceptable performance and positively influence the overall assessment.`);
-  }
-
-  // Weak areas
-  const weak = breakdown
-    .filter(b => !b.isRisk && b.earnedPoints < b.maxPoints * 0.5);
-  if (weak.length > 0) {
-    const names = weak.map(b => b.label.toLowerCase()).join(' and ');
-    parts.push(`However, ${names} ${weak.length > 1 ? 'are' : 'is'} below expectations and ${weak.length > 1 ? 'limit' : 'limits'} the score potential.`);
-  }
-
-  // Risk penalty narrative
-  const riskItem = breakdown.find(b => b.isRisk);
-  if (riskItem) {
-    const penalty = Math.abs(riskItem.earnedPoints);
-    if (penalty >= 12)      parts.push(`Elevated risk indicators (${scores.riskIndicators}/100) apply a significant penalty of -${penalty.toFixed(1)} points, materially impacting the Credit Confidence Score.`);
-    else if (penalty >= 6)  parts.push(`Moderate risk indicators (${scores.riskIndicators}/100) reduce the score by -${penalty.toFixed(1)} points.`);
-    else if (penalty > 0)   parts.push(`Risk indicators are relatively low (${scores.riskIndicators}/100), applying only a -${penalty.toFixed(1)} point deduction.`);
-    else                    parts.push(`No risk indicators detected — full score retained with zero penalty.`);
-  }
-
-  parts.push(`Based on a final score of ${score.toFixed(2)}, this MSME is recommended for ${lendingRecommendation}.`);
-
-  return parts.join(' ');
+  return `The business scores ${score.toFixed(2)} on the Credit Confidence index. Cash flow stands at ${scores.cashFlowHealth}/100 and compliance score at ${scores.complianceScore}/100, which are major anchors of creditworthiness. Risk is monitored at ${scores.riskIndicators}/100. recommended for ${lendingRecommendation}.`;
 }
 
 // ─── Aggregate processor ──────────────────────────────────────────────────────
-
 export function processHealthAssessment(scores: MSMEScores, dataFlags: DataSourceFlags): HealthResult {
   const cce = calculateCreditConfidenceScore(scores);
-  const status = getHealthStatus(cce.score);
-  const lendingRecommendation = getLendingRecommendation(cce.score);
+  const status = getLendingEligibilityStatus(cce.score);
+  const decision = getUnderwritingDecision(cce.score);
+  const riskLevel = getRiskLevel(cce.score);
   const recommendedCreditLimit = getRecommendedCreditLimit(cce.score);
   const dataConfidenceScore = calculateDataConfidence(dataFlags);
   const positiveContributors = getPositiveContributors(cce.breakdown);
   const negativeContributors = getNegativeContributors(cce.breakdown);
-  const explanation = generateExplanation(scores, cce.breakdown, cce.score, lendingRecommendation);
+  const whyBankShouldLend = getWhyBankShouldLend(cce.breakdown);
+
+  // Score limit rationale
+  let scoreRange = '0 - 39';
+  if (cce.score >= 90) scoreRange = '90 - 100';
+  else if (cce.score >= 80) scoreRange = '80 - 89';
+  else if (cce.score >= 70) scoreRange = '70 - 79';
+  else if (cce.score >= 60) scoreRange = '60 - 69';
+  else if (cce.score >= 50) scoreRange = '50 - 59';
+
+  const creditLimitRationale = {
+    scoreRange,
+    riskCategory: `${riskLevel} Risk`,
+    lendingCategory: getLendingRecommendation(cce.score),
+  };
+
+  // Top positive factors list
+  const topPos = positiveContributors.map(c => c.label.toLowerCase()).slice(0, 2).join(' and ');
+  const worstNeg = negativeContributors.map(c => c.label.toLowerCase()).slice(0, 1).join('');
+
+  const decisionExplanation = {
+    qualification: `The MSME qualifies for underwriting based on strong performance in ${topPos || 'operational metrics'} which present highly favorable lending attributes.`,
+    remainingRisks: worstNeg 
+      ? `Lenders should note that risks are concentrated in ${worstNeg}, which contributed negative weight to the score.`
+      : "No outstanding risk vectors were highlighted during the primary credit evaluation.",
+    recommendedExposure: `We recommend capping lending exposure at ${recommendedCreditLimit} under standard monitoring covenants, consistent with the ${status} profile.`
+  };
+
+  const explanation = generateExplanation(scores, cce.breakdown, cce.score, creditLimitRationale.lendingCategory);
 
   return {
     scoreBreakdown: cce.breakdown,
@@ -281,8 +266,14 @@ export function processHealthAssessment(scores: MSMEScores, dataFlags: DataSourc
     riskPenalty: cce.riskPenalty,
     score: cce.score,
     status,
-    lendingRecommendation,
+    lendingRecommendation: creditLimitRationale.lendingCategory,
     recommendedCreditLimit,
+    decision,
+    riskLevel,
+    lendingEligibilityStatus: status,
+    whyBankShouldLend,
+    creditLimitRationale,
+    decisionExplanation,
     dataConfidenceScore,
     positiveContributors,
     negativeContributors,

@@ -40,9 +40,25 @@ export interface HealthResult {
 
   // Final outputs
   score: number;
-  status: string;
-  lendingRecommendation: string;
+  status: string; // Legacy
+  lendingRecommendation: string; // Legacy
   recommendedCreditLimit: string;
+  
+  // Underwriting Workbench specific additions
+  decision: 'Approvable' | 'Conditional' | 'Review Required';
+  riskLevel: 'Minimal' | 'Low' | 'Medium' | 'High' | 'Critical';
+  lendingEligibilityStatus: 'Premium Eligible' | 'Growth Ready' | 'Standard Eligible' | 'Limited Exposure' | 'Manual Review';
+  whyBankShouldLend: string[];
+  creditLimitRationale: {
+    scoreRange: string;
+    riskCategory: string;
+    lendingCategory: string;
+  };
+  decisionExplanation: {
+    qualification: string;
+    remainingRisks: string;
+    recommendedExposure: string;
+  };
 
   // Data confidence
   dataConfidenceScore: number;
@@ -57,5 +73,5 @@ export interface HealthResult {
   // Future-ready fields
   requestedLoanAmount?: number;
   approvableLimit?: number;
-  decision?: 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW';
+  decisionCode?: 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW';
 }

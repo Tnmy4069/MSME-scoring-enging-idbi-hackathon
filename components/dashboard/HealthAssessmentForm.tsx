@@ -6,9 +6,6 @@ import { MSMEScores } from "@/lib/types";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 interface HealthAssessmentFormProps {
   scores: MSMEScores;
@@ -16,7 +13,7 @@ interface HealthAssessmentFormProps {
   onGenerate: () => void;
 }
 
-export function HealthAssessmentForm({ scores, onScoreChange, onGenerate }: HealthAssessmentFormProps) {
+export function HealthAssessmentForm({ scores, onScoreChange }: HealthAssessmentFormProps) {
   const handleInputChange = (key: keyof MSMEScores, value: string) => {
     let numValue = parseInt(value, 10);
     if (isNaN(numValue)) numValue = 0;
@@ -26,53 +23,39 @@ export function HealthAssessmentForm({ scores, onScoreChange, onGenerate }: Heal
   };
 
   return (
-    <Card className="rounded-sm border border-slate-200 shadow-sm bg-white text-slate-900">
-      <CardHeader className="bg-slate-50 border-b border-slate-200 px-6 py-4">
-        <CardTitle className="text-xl font-semibold text-slate-900">Assessment Parameters</CardTitle>
-        <CardDescription className="text-slate-500 mt-1">
-          Input scoring values (0-100) for each dimension to evaluate the financial health profile.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-          {DIMENSIONS.map((dim) => (
-            <div key={dim.key} className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label htmlFor={dim.key} className="text-sm font-medium text-slate-700">
-                  {dim.label} <span className="text-slate-400 font-normal ml-1">(max {dim.maxPoints} pts)</span>
-                </Label>
-                <Input
-                  id={dim.key}
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={String(scores[dim.key as keyof MSMEScores] ?? 0)}
-                  onChange={(e) => handleInputChange(dim.key as keyof MSMEScores, e.target.value)}
-                  className="w-20 text-right h-8 rounded-sm border-slate-300 focus-visible:ring-slate-500"
-                />
-              </div>
-              <Slider
-                value={scores[dim.key as keyof MSMEScores]}
-                max={100}
-                step={1}
-                onValueChange={(val) => onScoreChange(dim.key as keyof MSMEScores, val)}
-                className="py-1"
+    <div className="space-y-5 bg-white p-4 border border-slate-200 rounded-sm">
+      <div>
+        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-1">Assessment Dimensions</h4>
+        <p className="text-xs text-slate-400 font-semibold mb-4">Set scoring values (0-100) for credit evaluation</p>
+      </div>
+
+      <div className="space-y-4">
+        {DIMENSIONS.map((dim) => (
+          <div key={dim.key} className="space-y-2 pb-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor={dim.key} className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                {dim.label} <span className="text-slate-400 font-normal ml-0.5">(Max {dim.maxPoints} pts)</span>
+              </Label>
+              <Input
+                id={dim.key}
+                type="number"
+                min="0"
+                max="100"
+                value={String(scores[dim.key as keyof MSMEScores] ?? 0)}
+                onChange={(e) => handleInputChange(dim.key as keyof MSMEScores, e.target.value)}
+                className="w-16 text-right h-7 text-xs rounded-sm border-slate-300 focus-visible:ring-slate-500 font-semibold tabular-nums"
               />
             </div>
-          ))}
-        </div>
-
-        <Separator className="bg-slate-200 my-6" />
-
-        <div className="pt-2 flex justify-end">
-          <Button 
-            onClick={onGenerate}
-            className="w-full md:w-auto px-8 h-10 rounded-sm bg-slate-900 hover:bg-slate-800 text-white font-medium"
-          >
-            Generate Financial Health Card
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            <Slider
+              value={scores[dim.key as keyof MSMEScores]}
+              max={100}
+              step={1}
+              onValueChange={(val) => onScoreChange(dim.key as keyof MSMEScores, val)}
+              className="py-1"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
