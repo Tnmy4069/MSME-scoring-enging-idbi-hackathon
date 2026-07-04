@@ -3,19 +3,17 @@
 import React, { useRef, useState, useEffect } from "react";
 import { MSMEScores, HealthResult, DataSourceFlags } from "@/lib/types";
 import { processHealthAssessment, DIMENSION_CONFIG, RISK_MAX_PENALTY } from "@/lib/scoring";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import {
   Download, CheckCircle2, AlertTriangle, ShieldCheck,
   Lightbulb, Info, ArrowUpRight, ArrowDownRight,
   Briefcase, Activity, FileText, CreditCard, Shield,
-  GitPullRequest, Zap, BadgeAlert, Coins, HelpCircle, Check
+  GitPullRequest, Zap, BadgeAlert, Coins, Check, ArrowRight
 } from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine
-} from "recharts";
 
 interface ResultsDashboardProps {
   scores: MSMEScores;
@@ -88,8 +86,8 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Premium Eligible': return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      case 'Growth Ready':     return 'text-blue-700 bg-blue-50 border-blue-200';
+      case 'Premium Eligible':  return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      case 'Growth Ready':      return 'text-blue-700 bg-blue-50 border-blue-200';
       case 'Standard Eligible': return 'text-amber-700 bg-amber-50 border-amber-200';
       case 'Limited Exposure':  return 'text-orange-700 bg-orange-50 border-orange-200';
       default:                  return 'text-red-700 bg-red-50 border-red-200';
@@ -118,11 +116,70 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
   };
 
   // Semi-circular gauge logic
-  const r = 50;
-  const strokeWidth = 10;
-  const circumference = Math.PI * r; // ~157.08
-  const strokeDashoffset = circumference - (result.score / 100) * circumference;
-  const strokeColor = getStatusRingColor(result.lendingEligibilityStatus);
+  const renderGauge = (score: number) => {
+    const theta_deg = 180 - (score / 100) * 180;
+    const theta_rad = (theta_deg * Math.PI) / 180;
+    const r_in = 36;
+    const r_out = 50;
+    const x_in = 60 + r_in * Math.cos(theta_rad);
+    const y_in = 60 - r_in * Math.sin(theta_rad);
+    const x_out = 60 + r_out * Math.cos(theta_rad);
+    const y_out = 60 - r_out * Math.sin(theta_rad);
+
+    return (
+      <div className="flex flex-col items-center">
+        <div className="relative w-36 h-20">
+          <svg className="w-full h-full" viewBox="0 0 120 70">
+            <defs>
+              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#10b981" />   {/* Green */}
+                <stop offset="60%" stopColor="#f59e0b" />  {/* Yellow/Orange */}
+                <stop offset="100%" stopColor="#ef4444" /> {/* Red/Orange */}
+              </linearGradient>
+            </defs>
+            {/* Background track */}
+            <path
+              d="M 15 60 A 45 45 0 0 1 105 60"
+              fill="none"
+              stroke="#f1f5f9"
+              strokeWidth="9"
+              strokeLinecap="round"
+            />
+            {/* Active path */}
+            <path
+              d="M 15 60 A 45 45 0 0 1 105 60"
+              fill="none"
+              stroke="url(#gaugeGradient)"
+              strokeWidth="9"
+              strokeLinecap="round"
+              strokeDasharray="141.37"
+              strokeDashoffset={141.37 - (score / 100) * 141.37}
+              className="transition-all duration-1000 ease-out"
+            />
+            {/* Needle indicator */}
+            <line
+              x1={x_in}
+              y1={y_in}
+              x2={x_out}
+              y2={y_out}
+              stroke="#475569"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          {/* Centered score value */}
+          <div className="absolute bottom-0 inset-x-0 flex flex-col items-center justify-end">
+            <span className="text-xl font-extrabold text-slate-800 leading-none">{score.toFixed(2)}</span>
+          </div>
+        </div>
+        {/* Under-labels */}
+        <div className="flex justify-between w-28 text-[9px] font-bold text-slate-400 mt-1">
+          <span>0</span>
+          <span>100</span>
+        </div>
+      </div>
+    );
+  };
 
   // Positive vs Risk drivers calculations (v2 points scale)
   const positiveDrivers = result.scoreBreakdown.filter(b => !b.isRisk);
@@ -132,9 +189,9 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
   const spectrumSteps = [
     { label: 'Manual Review', min: 0, max: 39 },
     { label: 'Limited Exposure', min: 40, max: 59 },
-    { label: 'Standard Lending', min: 60, max: 74 },
-    { label: 'Growth Lending', min: 75, max: 89 },
-    { label: 'Premium Lending', min: 90, max: 100 },
+    { label: 'Standard Eligible', min: 60, max: 74 },
+    { label: 'Growth Ready', min: 75, max: 89 },
+    { label: 'Premium Eligible', min: 90, max: 100 },
   ];
 
   const getFactorIcon = (key: string) => {
@@ -160,7 +217,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
       {/* Action Header Banner */}
       <div className="flex justify-between items-center bg-white px-6 py-3.5 border border-slate-200 rounded-sm">
         <div className="flex items-center gap-2.5 text-slate-500 text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck className="h-4.5 w-4.5 text-blue-600" /> Alternate Alternate alternate alternate Alternate Credit Underwriting Desk
+          <ShieldCheck className="h-4.5 w-4.5 text-blue-600" /> Credit Decisioning Suite
         </div>
         <Button
           onClick={handleDownloadPDF}
@@ -170,7 +227,7 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           className="gap-2 rounded-sm border-blue-200 hover:bg-blue-50 text-blue-700 font-bold"
         >
           <Download className="h-4 w-4" />
-          {isExporting ? 'Compiling File...' : 'Download Assessment Report'}
+          {isExporting ? 'Compiling File...' : 'Download Report'}
         </Button>
       </div>
 
@@ -202,63 +259,35 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </div>
         </div>
 
-        {/* ─── Underwriting Dashboard KPIs (5 Columns) ─── */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {/* ─── Underwriting Dashboard KPIs (5 Columns Layout) ─── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           
-          {/* Credit Confidence Score card */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Credit Confidence Score <InfoIcon />
-              </div>
-              <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-3xl font-black text-slate-900">{result.score.toFixed(2)}</span>
-                <span className="text-xs text-slate-400 font-medium">/100</span>
-              </div>
-              <div className="mt-1">
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider border ${getStatusColor(result.lendingEligibilityStatus)}`}>
-                  {result.lendingEligibilityStatus}
-                </span>
-              </div>
+          {/* Credit Confidence Score card (Spans 2 columns) */}
+          <Card className="rounded-sm border-slate-200 shadow-none bg-white sm:col-span-2 p-5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+              Credit Confidence Score <InfoIcon />
             </div>
-
-            {/* Gauge */}
-            <div className="flex justify-center mt-3 h-20 relative overflow-hidden">
-              <svg className="w-28 h-20" viewBox="0 0 120 70">
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={r}
-                  fill="transparent"
-                  stroke="#e2e8f0"
-                  strokeWidth={strokeWidth}
-                  strokeDasharray="157.08 314.16"
-                  transform="rotate(-180 60 60)"
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={r}
-                  fill="transparent"
-                  stroke={strokeColor}
-                  strokeWidth={strokeWidth}
-                  strokeDasharray={`${(result.score / 100) * 157.08} 314.16`}
-                  transform="rotate(-180 60 60)"
-                  strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
-                />
-              </svg>
-              <div className="absolute bottom-0 flex flex-col items-center">
-                <span className="text-base font-extrabold text-slate-800">{result.score.toFixed(2)}</span>
-                <div className="flex justify-between w-24 text-[8px] text-slate-400 px-1 font-bold">
-                  <span>0</span>
-                  <span>100</span>
+            <div className="flex flex-row items-center justify-between gap-4">
+              {/* Left: Score text and badge */}
+              <div className="flex flex-col justify-between min-w-0">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-slate-900">{result.score.toFixed(2)}</span>
+                  <span className="text-sm text-slate-400 font-semibold">/100</span>
+                </div>
+                <div className="mt-2">
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border ${getStatusColor(result.lendingEligibilityStatus)}`}>
+                    {result.status}
+                  </span>
+                </div>
+                <div className="text-[9px] text-slate-400 font-semibold mt-3">
+                  Score calculated on {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </div>
               </div>
-            </div>
-            <div className="text-[9px] text-slate-400 text-center font-medium mt-1">
-              File updated: {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+
+              {/* Right: Gauge */}
+              <div className="flex-shrink-0">
+                {renderGauge(result.score)}
+              </div>
             </div>
           </Card>
 
@@ -268,8 +297,8 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
               Lending Eligibility <InfoIcon />
             </div>
             <div className="my-3 flex items-center gap-3">
-              <div className="p-2.5 rounded-sm" style={{ backgroundColor: `${strokeColor}15` }}>
-                <Shield className="h-6 w-6" style={{ color: strokeColor }} />
+              <div className="p-2.5 rounded-sm" style={{ backgroundColor: `${getStatusRingColor(result.lendingEligibilityStatus)}15` }}>
+                <Shield className="h-6 w-6" style={{ color: getStatusRingColor(result.lendingEligibilityStatus) }} />
               </div>
               <div>
                 <div className="text-base font-extrabold text-slate-800 leading-tight">{result.lendingEligibilityStatus}</div>
@@ -301,13 +330,13 @@ export function ResultsDashboard({ scores, dataFlags }: ResultsDashboardProps) {
           </Card>
 
           {/* Recommended Limit & Rationale */}
-          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between col-span-1">
+          <Card className="rounded-sm border-slate-200 shadow-none bg-white p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
               Recommended Credit Limit <InfoIcon />
             </div>
             <div className="my-3 flex items-center gap-2.5">
               <div className="p-2.5 rounded-sm bg-emerald-50">
-                <Coins className="h-6 w-6 text-emerald-600" />
+                <span className="text-lg font-bold text-emerald-600">₹</span>
               </div>
               <div>
                 <div className="text-lg font-bold text-slate-800">{result.recommendedCreditLimit}</div>
