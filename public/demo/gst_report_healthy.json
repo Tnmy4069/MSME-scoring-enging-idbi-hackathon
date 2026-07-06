@@ -1,0 +1,13 @@
+{
+  "company": "Kiran Enterprise Pvt Ltd",
+  "gstin": "27AAECK1234F1Z5",
+  "turnover_annual": 12400000,
+  "growth_yoy_pct": 18.0,
+  "compliance_filing_pct": 100.0,
+  "filings": [
+    {"period": "2025-Q1", "status": "Filed", "date": "2025-04-10"},
+    {"period": "2025-Q2", "status": "Filed", "date": "2025-07-11"},
+    {"period": "2025-Q3", "status": "Filed", "date": "2025-10-09"},
+    {"period": "2025-Q4", "status": "Filed", "date": "2026-01-12"}
+  ]
+}

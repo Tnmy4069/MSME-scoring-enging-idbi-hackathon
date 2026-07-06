@@ -1,0 +1,10 @@
+Transaction Date,Transaction ID,Payer/Payee UPI,Amount (INR),Status,Direction
+2026-01-01,TXN10001,customer1@okaxis,850.00,SUCCESS,INFLOW
+2026-01-01,TXN10002,vendorA@okicici,4200.00,SUCCESS,OUTFLOW
+2026-01-02,TXN10003,customer2@oksbi,1200.00,SUCCESS,INFLOW
+2026-01-02,TXN10004,customer3@okhdfc,3500.00,SUCCESS,INFLOW
+2026-01-03,TXN10005,customer4@okaxis,150.00,FAILED,INFLOW
+# SUMMARY STATS:
+# Annual Inflow: INR 9,840,000.00
+# Total Transactions: 18240
+# Failed Transaction Rate: 1.2%

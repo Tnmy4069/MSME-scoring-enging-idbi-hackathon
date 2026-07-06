@@ -1,0 +1,10 @@
+EMPLOYEES' PROVIDENT FUND ORGANISATION, INDIA
+Establishment Details
+Establishment ID: MHBAN1234567000
+Name of Establishment: KIRAN ENTERPRISE PVT LTD
+Active Contributing Employees (Headcount): 42
+Employee Growth Rate (YoY): 16.7% (Increased from 36 to 42 employees)
+Compliance Status: No defaults, all monthly contributions paid on time.
+Submission Reference: EPFO-2025-SUB-87563
+Verified Date: 12-Jan-2026
+Verified By: EPFO System Controller API (National Portal)
