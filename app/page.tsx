@@ -30,7 +30,8 @@ import {
   Fingerprint,
   Users,
   Fuel,
-  History
+  History,
+  X
 } from "lucide-react";
 import {
   Radar,
