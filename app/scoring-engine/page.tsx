@@ -4,16 +4,32 @@ import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Menu, Calculator, TrendingUp, AlertTriangle, Database, CheckCircle2, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DIMENSION_CONFIG, RISK_MAX_PENALTY, CREDIT_LIMIT_CONFIG } from "@/lib/scoring";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+
+const BHI_DIMENSIONS = [
+  { key: 'revenueQuality', label: 'Revenue Quality', maxPoints: 20 },
+  { key: 'cashFlowHealth', label: 'Cash Flow Health', maxPoints: 25 },
+  { key: 'complianceGovernance', label: 'Compliance & Governance', maxPoints: 15 },
+  { key: 'growthPotential', label: 'Growth Potential', maxPoints: 15 },
+  { key: 'operationalStability', label: 'Operational Stability', maxPoints: 15 },
+  { key: 'businessNetworkStrength', label: 'Business Network Strength', maxPoints: 10 },
+];
+
+const CREDIT_LIMIT_TIERS = [
+  { minScore: 90, limit: 'Prime Business Loan / Overdraft' },
+  { minScore: 75, limit: 'Prime Working Capital Loan' },
+  { minScore: 60, limit: 'Working Capital Loan' },
+  { minScore: 40, limit: 'Business Term Loan' },
+  { minScore: 0,  limit: 'Micro Business Loan (Review)' },
+];
 
 export default function ScoringEnginePage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [simulatedScore, setSimulatedScore] = useState(75);
   const [simulatedRisk, setSimulatedRisk] = useState(10);
 
-  const calculateFinal = () => Math.max(0, simulatedScore - (simulatedRisk * RISK_MAX_PENALTY / 100));
+  const calculateFinal = () => Math.max(0, simulatedScore - (simulatedRisk * 30 / 100));
   
   return (
     <div className="min-h-screen bg-background text-foreground flex font-sans selection:bg-[#EEF5F2] selection:text-[#00836C] relative">
@@ -34,7 +50,7 @@ export default function ScoringEnginePage() {
                 Scoring Engine Methodology
               </h2>
               <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wider mt-0.5 sm:mt-1">
-                How the AI-Powered Credit Engine Works
+                How the MSME Financial Health Card Scoring Works
               </p>
             </div>
           </div>
@@ -47,10 +63,10 @@ export default function ScoringEnginePage() {
             {/* Overview */}
             <section>
               <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-primary" /> Engine Overview
+                <Calculator className="h-5 w-5 text-primary" /> Methodology Overview
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
-                The IDBI MSME Credit Underwriting Engine uses a highly calibrated formula to evaluate businesses based on alternative data sources. The final <strong>Credit Confidence Score (0-100)</strong> determines the lending eligibility tier and recommended credit limits.
+                The IDBI MSME Financial Health Card scoring engine uses a highly calibrated formula to evaluate businesses based on alternative data (GST, UPI, EPFO, etc.). The final <strong>Financial Health Score (0-100)</strong> determines the lending eligibility tier and recommended credit limits.
               </p>
             </section>
 
@@ -60,17 +76,17 @@ export default function ScoringEnginePage() {
                 <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4">Core Formula</h4>
                 <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left bg-secondary p-4 rounded-md border border-border">
                   <div>
-                    <span className="block text-2xl font-black text-primary">Final Score</span>
+                    <span className="block text-2xl font-black text-primary">Financial Health Score</span>
                   </div>
                   <div className="text-xl font-bold text-slate-400">=</div>
                   <div>
-                    <span className="block text-xl font-bold text-[#16A34A]">∑ Positive Dimensions</span>
+                    <span className="block text-xl font-bold text-[#16A34A]">Base Health Index (BHI)</span>
                     <span className="text-xs text-slate-500 font-semibold">(Max 100 points)</span>
                   </div>
                   <div className="text-xl font-bold text-slate-400">-</div>
                   <div>
-                    <span className="block text-xl font-bold text-[#DC2626]">Risk Penalty</span>
-                    <span className="text-xs text-slate-500 font-semibold">(Max {RISK_MAX_PENALTY} points)</span>
+                    <span className="block text-xl font-bold text-[#DC2626]">Risk Penalty (RAI)</span>
+                    <span className="text-xs text-slate-500 font-semibold">(Max 30 points)</span>
                   </div>
                 </div>
               </CardContent>
@@ -81,13 +97,13 @@ export default function ScoringEnginePage() {
               <Card className="rounded-md border-border bg-white shadow-sm">
                 <CardHeader className="bg-secondary border-b border-border pb-4">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-[#16A34A]" /> Positive Scoring Dimensions
+                    <TrendingUp className="h-4 w-4 text-[#16A34A]" /> Positive Scoring Dimensions (BHI)
                   </CardTitle>
                   <CardDescription className="text-xs">Each dimension evaluates specific business health indicators up to a maximum weight.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-border">
-                    {DIMENSION_CONFIG.map(dim => (
+                    {BHI_DIMENSIONS.map(dim => (
                       <div key={dim.key} className="flex justify-between items-center p-4">
                         <span className="text-sm font-semibold text-slate-700">{dim.label}</span>
                         <span className="text-sm font-bold text-[#16A34A] bg-[#16A34A]/10 px-2 py-0.5 rounded-full">
@@ -117,7 +133,7 @@ export default function ScoringEnginePage() {
                     </p>
                     <div className="bg-secondary border border-border p-3 rounded-md">
                       <span className="text-xs font-bold text-slate-500 block mb-1">Example Calculation:</span>
-                      <p className="text-sm font-semibold text-slate-800">50% Severity &times; 20 Max Penalty = <span className="text-[#DC2626]">-10 Points</span></p>
+                      <p className="text-sm font-semibold text-slate-800">50% Severity &times; 30 Max Penalty = <span className="text-[#DC2626]">-15 Points</span></p>
                     </div>
                   </CardContent>
                 </Card>
@@ -126,15 +142,15 @@ export default function ScoringEnginePage() {
                 <Card className="rounded-md border-border bg-white shadow-sm">
                   <CardHeader className="bg-secondary border-b border-border pb-4">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Database className="h-4 w-4 text-[#2563EB]" /> Data Confidence
+                      <Database className="h-4 w-4 text-[#2563EB]" /> Data Trust Index (DTI)
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 space-y-4">
                     <p className="text-sm text-slate-600 leading-relaxed">
-                      Calculated simply as the ratio of successfully connected data sources over the total required sources. High data confidence validates the primary score.
+                      Calculated as the robust verifiability of connected data sources over total required sources. High data confidence validates the primary score.
                     </p>
                     <div className="flex items-center gap-2 bg-[#2563EB]/10 text-[#2563EB] px-3 py-2 rounded-md text-xs font-bold">
-                      <Info className="h-4 w-4" /> (Connected Sources / Total Sources) &times; 100
+                      <Info className="h-4 w-4" /> (Verified Data Sources / Total Required) &times; 100
                     </div>
                   </CardContent>
                 </Card>
@@ -147,14 +163,14 @@ export default function ScoringEnginePage() {
                 <CheckCircle2 className="h-5 w-5 text-primary" /> Lending Eligibility & Tiers
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {CREDIT_LIMIT_CONFIG.map((tier, idx) => (
+                {CREDIT_LIMIT_TIERS.map((tier: { minScore: number, limit: string }, idx: number) => (
                   <Card key={idx} className="rounded-md border-border bg-white shadow-sm">
                     <CardContent className="p-5 flex flex-col items-center text-center gap-2">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Score Requirement</div>
                       <div className="text-2xl font-black text-slate-800">{tier.minScore}+</div>
                       <div className="w-full h-px bg-border my-1" />
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approved Limit Cap</div>
-                      <div className="text-base font-bold text-primary">{tier.limit}</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recommended Product</div>
+                      <div className="text-sm font-bold text-primary">{tier.limit}</div>
                     </CardContent>
                   </Card>
                 ))}
@@ -185,10 +201,10 @@ export default function ScoringEnginePage() {
                   </div>
 
                   <div className="bg-secondary p-8 rounded-md border border-border flex flex-col items-center justify-center text-center h-full">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Calculated Final Score</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Calculated Financial Health Score</span>
                     <span className="text-5xl font-black text-slate-900">{calculateFinal().toFixed(1)}</span>
                     <div className="mt-4 text-sm font-semibold text-slate-600">
-                      Resulting Deduction: <span className="text-[#DC2626] font-bold">-{ (simulatedRisk * RISK_MAX_PENALTY / 100).toFixed(1) } pts</span>
+                      Resulting Deduction: <span className="text-[#DC2626] font-bold">-{ (simulatedRisk * 30 / 100).toFixed(1) } pts</span>
                     </div>
                   </div>
                 </CardContent>

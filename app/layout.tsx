@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MSME Financial Health Card | AI-Powered Credit Assessment",
-  description: "AI-Powered Alternate Data Credit Assessment platform for MSME underwriting and financial health evaluation.",
+  title: "MSME Financial Health Card | AI/ML-Driven Credit Evaluation",
+  description: "AI/ML-Driven MSME Financial Health Card aggregating alternate data (GST, UPI, EPFO, AA) for real-time multidimensional financial health scoring.",
 };
 
 export default function RootLayout({
@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col" style={{ fontFamily: "'Segoe UI', 'Segoe UI Variable', system-ui, -apple-system, sans-serif" }}>
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col" style={{ fontFamily: "'Segoe UI', 'Segoe UI Variable', system-ui, -apple-system, sans-serif" }} suppressHydrationWarning>
         {children}
       </body>
     </html>
