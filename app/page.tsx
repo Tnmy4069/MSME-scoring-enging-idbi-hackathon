@@ -127,6 +127,13 @@ export default function Home() {
   const [bankInsight, setBankInsight] = useState<string>("");
   const [epfoInsight, setEpfoInsight] = useState<string>("");
 
+  // Underwriter Chatbot states
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatBottomRef = useRef(null);
+
   // ─── Phase 2 State Variables ───
   const [consentGranted, setConsentGranted] = useState(false);
   const [consentRecord, setConsentRecord] = useState<ConsentRecord | null>(null);
@@ -215,6 +222,85 @@ export default function Home() {
       console.error("Failed to generate AI summary:", err);
     } finally {
       setAiSummaryLoading(false);
+    }
+  };
+
+  // Listen for open-underwriter-chat trigger event from Sidebar
+  useEffect(() => {
+    const handleOpenChat = () => setIsChatOpen(true);
+    window.addEventListener('open-underwriter-chat', handleOpenChat);
+    return () => window.removeEventListener('open-underwriter-chat', handleOpenChat);
+  }, []);
+
+  // Chat scroll bottom trigger
+  useEffect(() => {
+    if (isChatOpen) {
+      setTimeout(() => {
+        chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [isChatOpen, chatMessages]);
+
+  const submitChatPrompt = async (promptText: string) => {
+    if (!promptText.trim() || chatLoading) return;
+
+    const userMessage = { role: "user", content: promptText };
+    const updatedMessages = [...chatMessages, userMessage];
+    
+    setChatMessages(updatedMessages);
+    setChatInput("");
+    setChatLoading(true);
+
+    setTimeout(() => {
+      chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+
+    try {
+      const context = {
+        hasData: Object.keys(extractedData).length > 0,
+        businessName: extractedCompany,
+        financialHealthScore: scoringResults ? Math.round(scoringResults.finalScore) : 70,
+        bhiScore: scoringResults ? scoringResults.bhiScore : 70,
+        raiScore: scoringResults ? scoringResults.raiScore : 0,
+        recommendedLimit: scoringResults ? scoringResults.recommendedCreditExposure : "N/A",
+        recommendedProduct: scoringResults ? scoringResults.recommendedProduct : "N/A",
+        gstTurnover: extractedData.gst?.turnover || 0,
+        gstGrowth: extractedData.gst?.growth || 0,
+        gstCompliance: extractedData.gst?.compliance || 0,
+        upiInflow: extractedData.upi?.annualInflow || 0,
+        upiTransactions: extractedData.upi?.transactions || 0,
+        upiBounce: extractedData.upi?.failedTransactions || 0,
+        bankBalance: extractedData.bank?.averageBalance || 0,
+        bankEmi: extractedData.bank?.emiBurden || "Low",
+        bankStability: extractedData.bank?.cashFlowStability || "High",
+        epfoEmployees: extractedData.epfo?.employees || 0,
+        epfoGrowth: extractedData.epfo?.employeeGrowth || 0,
+        strengths: scoringResults ? scoringResults.explainability.bhiBreakdown.slice(0, 2).map(d => d.label).join(", ") : "",
+        risks: scoringResults ? scoringResults.explainability.raiBreakdown.slice(0, 2).map(d => d.label).join(", ") : ""
+      };
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: updatedMessages,
+          context
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setChatMessages([...updatedMessages, { role: "model", content: data.content }]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch chatbot response:", err);
+    } finally {
+      setChatLoading(false);
+      setTimeout(() => {
+        chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     }
   };
 
@@ -2169,8 +2255,144 @@ export default function Home() {
               </div>
             </section>
 
-            {/* Bottom Disclaimer */}
-            <div className="text-center space-y-2 border-t border-slate-200/80 pt-8 max-w-3xl mx-auto">
+      {/* ─── CHAT DRAWER PANEL ─── */}
+      {isChatOpen && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40" onClick={() => setIsChatOpen(false)} />
+          
+          {/* Drawer container */}
+          <aside className="fixed right-0 top-0 bottom-0 w-[420px] max-w-full bg-white border-l border-slate-200 shadow-2xl z-50 flex flex-col transition-all duration-300 transform translate-x-0 font-sans">
+            {/* Header */}
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-[#EEF5F2]">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#F4B400] animate-pulse" />
+                <div>
+                  <h3 className="font-bold text-slate-800 text-sm">IDBI Credit AI Assistant</h3>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                    {extractedCompany ? `${extractedCompany} Active Context` : "General Underwriting mode"}
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsChatOpen(false)} 
+                className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Messages List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+              {/* Default Welcome Message */}
+              <div className="flex gap-2">
+                <div className="w-6 h-6 rounded-full bg-[#00836C] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                  AI
+                </div>
+                <div className="bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-700 shadow-xs max-w-[85%] leading-relaxed">
+                  <p className="font-bold text-[#00614F] mb-1">Welcome Assessor!</p>
+                  I am seeded with the alternate ledger data. You can ask me custom questions about this business's financials or review the FAQs below:
+                </div>
+              </div>
+
+              {/* Chat history mapping */}
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {msg.role !== 'user' && (
+                    <div className="w-6 h-6 rounded-full bg-[#00836C] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                      AI
+                    </div>
+                  )}
+                  <div className={`rounded-lg p-3 text-xs shadow-xs max-w-[85%] leading-relaxed ${
+                    msg.role === 'user' 
+                      ? 'bg-[#00836C] text-white' 
+                      : 'bg-white border border-slate-200 text-slate-700'
+                  }`}>
+                    {msg.content.split('\n').map((para, i) => (
+                      <p key={i} className={i > 0 ? "mt-1.5" : ""}>{para}</p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Chat loading state */}
+              {chatLoading && (
+                <div className="flex gap-2 justify-start">
+                  <div className="w-6 h-6 rounded-full bg-[#00836C] text-white flex items-center justify-center font-bold text-[10px] shrink-0 animate-pulse">
+                    AI
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-400 shadow-xs max-w-[85%] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
+              
+              <div ref={chatBottomRef} />
+            </div>
+
+            {/* Prepopulated Underwriting FAQs */}
+            <div className="p-3 bg-white border-t border-slate-100 space-y-1.5">
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Underwriting FAQs</span>
+              <div className="flex flex-wrap gap-1.5">
+                <button 
+                  onClick={() => submitChatPrompt("Why is the Financial Health Score calculated at this level?")}
+                  className="px-2 py-1 text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-full transition-colors cursor-pointer text-left font-medium"
+                >
+                  Score Derivation
+                </button>
+                <button 
+                  onClick={() => submitChatPrompt("How can this MSME optimize their score?")}
+                  className="px-2 py-1 text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-full transition-colors cursor-pointer text-left font-medium"
+                >
+                  Score Optimization
+                </button>
+                <button 
+                  onClick={() => submitChatPrompt("Explain the risk deductions applied to this business.")}
+                  className="px-2 py-1 text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-full transition-colors cursor-pointer text-left font-medium"
+                >
+                  Risk Penalties
+                </button>
+                <button 
+                  onClick={() => submitChatPrompt("What are the criteria for the credit limit recommended?")}
+                  className="px-2 py-1 text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-full transition-colors cursor-pointer text-left font-medium"
+                >
+                  Exposure Limit
+                </button>
+              </div>
+            </div>
+
+            {/* Input Form Footer */}
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (chatInput.trim()) submitChatPrompt(chatInput);
+              }}
+              className="p-3 border-t border-slate-100 flex gap-2 bg-white"
+            >
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask underwriting assistant..."
+                disabled={chatLoading}
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-full text-xs focus:outline-none focus:ring-1 focus:ring-[#00836C] disabled:bg-slate-50 disabled:text-slate-400"
+              />
+              <button
+                type="submit"
+                disabled={chatLoading || !chatInput.trim()}
+                className="px-4 py-2 bg-[#00836C] hover:bg-[#00614F] disabled:bg-slate-100 disabled:text-slate-300 text-white text-xs font-bold rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed"
+              >
+                Send
+              </button>
+            </form>
+          </aside>
+        </>
+      )}
+
+      {/* Bottom Disclaimer */}
+      <div className="text-center space-y-2 border-t border-slate-200/80 pt-8 max-w-3xl mx-auto">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Underwriting Disclaimer</p>
               <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
                 Assessment generated using alternate financial data including GST, UPI, Banking and Employment records.

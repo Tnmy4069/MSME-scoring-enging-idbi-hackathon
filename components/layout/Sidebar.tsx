@@ -104,7 +104,12 @@ export function Sidebar({ isMobileOpen, onMobileClose, isHealthCardGenerated }: 
               <HelpCircle className="h-4 w-4 text-idbi-gold" /> Need Help?
             </div>
             <p className="text-[11px] text-slate-300 leading-normal mb-3">Talk to Assistant</p>
-            <button className="w-full text-center py-2 bg-transparent hover:bg-primary/20 border border-primary text-white text-xs font-bold rounded-full transition-colors cursor-pointer">
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-underwriter-chat'));
+              }}
+              className="w-full text-center py-2 bg-transparent hover:bg-primary/20 border border-primary text-white text-xs font-bold rounded-full transition-colors cursor-pointer"
+            >
               Launch Underwriting Chat
             </button>
           </div>
