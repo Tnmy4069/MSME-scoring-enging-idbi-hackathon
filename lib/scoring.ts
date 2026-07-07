@@ -1,282 +1,538 @@
-import { MSMEScores, HealthResult, DataSourceFlags, ScoreBreakdownItem, Contributor } from "./types";
+import { 
+  BusinessHealthIndex, 
+  RiskAdjustmentIndex, 
+  DataTrustIndex,
+  HealthResult,
+  ExplainabilityComponent,
+  ImprovementRecommendation,
+  PortfolioImpactAssessment,
+  FinancialInclusionAssessment,
+  FraudIntelligence,
+  FraudAnomaly,
+  CashflowRunway,
+  UnderwritingDecision
+} from "./types";
 
-// ─── Dimension configuration ─────────────────────────────────────────────────
-export const DIMENSION_CONFIG = [
-  { key: 'businessActivity',     label: 'Business Activity',     maxPoints: 15 },
-  { key: 'cashFlowHealth',       label: 'Cash Flow Health',      maxPoints: 20 },
-  { key: 'complianceScore',      label: 'Compliance Score',      maxPoints: 15 },
-  { key: 'transactionBehaviour', label: 'Transaction Behaviour', maxPoints: 10 },
-  { key: 'businessStability',    label: 'Business Stability',    maxPoints: 15 },
-  { key: 'networkStrength',      label: 'Network Strength',      maxPoints: 10 },
-  { key: 'growthPotential',      label: 'Growth Potential',      maxPoints: 15 },
-] as const;
-
-export const RISK_MAX_PENALTY = 20;
-
-export const DIMENSIONS = [
-  ...DIMENSION_CONFIG,
-  { key: 'riskIndicators', label: 'Risk Indicators', maxPoints: 0 },
-] as const;
-
-export const DATA_SOURCES = [
-  { key: 'gst',               label: 'GST Data' },
-  { key: 'upi',               label: 'UPI Analytics' },
-  { key: 'accountAggregator', label: 'Account Aggregator' },
-  { key: 'epfo',              label: 'EPFO Records' },
-  { key: 'itr',               label: 'ITR Filing' },
-] as const;
-
-export const CREDIT_LIMIT_CONFIG = [
-  { minScore: 90, limit: '₹25,00,000' },
-  { minScore: 80, limit: '₹15,00,000' },
-  { minScore: 70, limit: '₹10,00,000' },
-  { minScore: 60, limit: '₹5,00,000' },
-  { minScore: 50, limit: '₹2,00,000' },
-  { minScore: 0,  limit: 'Manual Review Required' },
-];
-
-// ─── Individual contribution calculators ─────────────────────────────────────
-export function calculateBusinessActivityContribution(raw: number): number {
-  return Number((raw * 15 / 100).toFixed(2));
-}
-
-export function calculateCashFlowContribution(raw: number): number {
-  return Number((raw * 20 / 100).toFixed(2));
-}
-
-export function calculateComplianceContribution(raw: number): number {
-  return Number((raw * 15 / 100).toFixed(2));
-}
-
-export function calculateTransactionContribution(raw: number): number {
-  return Number((raw * 10 / 100).toFixed(2));
-}
-
-export function calculateStabilityContribution(raw: number): number {
-  return Number((raw * 15 / 100).toFixed(2));
-}
-
-export function calculateNetworkContribution(raw: number): number {
-  return Number((raw * 10 / 100).toFixed(2));
-}
-
-export function calculateGrowthContribution(raw: number): number {
-  return Number((raw * 15 / 100).toFixed(2));
-}
-
-export function calculateRiskPenalty(riskIndicators: number): number {
-  return Number((riskIndicators * RISK_MAX_PENALTY / 100).toFixed(2));
-}
-
-// ─── Credit Confidence Score ─────────────────────────────────────────────────
-export function calculateCreditConfidenceScore(scores: MSMEScores): {
-  breakdown: ScoreBreakdownItem[];
-  positiveTotal: number;
-  riskPenalty: number;
-  score: number;
-} {
-  const breakdown: ScoreBreakdownItem[] = [];
-
-  const contributions = [
-    { key: 'businessActivity',     label: 'Business Activity',     maxPts: 15, earned: calculateBusinessActivityContribution(scores.businessActivity),  raw: scores.businessActivity },
-    { key: 'cashFlowHealth',       label: 'Cash Flow Health',      maxPts: 20, earned: calculateCashFlowContribution(scores.cashFlowHealth),            raw: scores.cashFlowHealth },
-    { key: 'complianceScore',      label: 'Compliance Score',      maxPts: 15, earned: calculateComplianceContribution(scores.complianceScore),          raw: scores.complianceScore },
-    { key: 'transactionBehaviour', label: 'Transaction Behaviour', maxPts: 10, earned: calculateTransactionContribution(scores.transactionBehaviour),    raw: scores.transactionBehaviour },
-    { key: 'businessStability',    label: 'Business Stability',    maxPts: 15, earned: calculateStabilityContribution(scores.businessStability),          raw: scores.businessStability },
-    { key: 'networkStrength',      label: 'Network Strength',      maxPts: 10, earned: calculateNetworkContribution(scores.networkStrength),              raw: scores.networkStrength },
-    { key: 'growthPotential',      label: 'Growth Potential',      maxPts: 15, earned: calculateGrowthContribution(scores.growthPotential),              raw: scores.growthPotential },
+export function calculateBHI(bhi: BusinessHealthIndex) {
+  const breakdown: ExplainabilityComponent[] = [
+    { label: 'Revenue Quality', score: (bhi.revenueQuality * 0.20), maxPoints: 20, raw: bhi.revenueQuality },
+    { label: 'Cash Flow Health', score: (bhi.cashFlowHealth * 0.25), maxPoints: 25, raw: bhi.cashFlowHealth },
+    { label: 'Compliance & Governance', score: (bhi.complianceGovernance * 0.15), maxPoints: 15, raw: bhi.complianceGovernance },
+    { label: 'Growth Potential', score: (bhi.growthPotential * 0.15), maxPoints: 15, raw: bhi.growthPotential },
+    { label: 'Operational Stability', score: (bhi.operationalStability * 0.15), maxPoints: 15, raw: bhi.operationalStability },
+    { label: 'Business Network Strength', score: (bhi.businessNetworkStrength * 0.10), maxPoints: 10, raw: bhi.businessNetworkStrength },
   ];
-
-  let positiveTotal = 0;
-  for (const c of contributions) {
-    positiveTotal += c.earned;
-    breakdown.push({
-      key: c.key,
-      label: c.label,
-      maxPoints: c.maxPts,
-      earnedPoints: c.earned,
-      rawScore: c.raw,
-      isRisk: false,
-    });
-  }
-  positiveTotal = Number(positiveTotal.toFixed(2));
-
-  const riskPenalty = calculateRiskPenalty(scores.riskIndicators);
-  breakdown.push({
-    key: 'riskPenalty',
-    label: 'Risk Penalty',
-    maxPoints: RISK_MAX_PENALTY,
-    earnedPoints: -riskPenalty,
-    rawScore: scores.riskIndicators,
-    isRisk: true,
-  });
-
-  const score = Math.min(100, Math.max(0, Number((positiveTotal - riskPenalty).toFixed(2))));
-
-  return { breakdown, positiveTotal, riskPenalty, score };
+  const score = breakdown.reduce((sum, item) => sum + item.score, 0);
+  return { score: Number(score.toFixed(2)), breakdown };
 }
 
-// ─── Status & Decisioning ──────────────────────────────────────────────────
-export function getLendingEligibilityStatus(score: number): 'Premium Eligible' | 'Growth Ready' | 'Standard Eligible' | 'Limited Exposure' | 'Manual Review' {
-  if (score >= 90) return 'Premium Eligible';
+export function calculateRAI(rai: RiskAdjustmentIndex) {
+  const breakdown: ExplainabilityComponent[] = [
+    { label: 'Revenue Volatility', score: Math.min(0, Math.max(-5, rai.revenueVolatility)), maxPoints: -5, raw: rai.revenueVolatility },
+    { label: 'Customer Concentration', score: Math.min(0, Math.max(-5, rai.customerConcentration)), maxPoints: -5, raw: rai.customerConcentration },
+    { label: 'Supplier Dependency', score: Math.min(0, Math.max(-5, rai.supplierDependency)), maxPoints: -5, raw: rai.supplierDependency },
+    { label: 'Failed Transaction Ratio', score: Math.min(0, Math.max(-5, rai.failedTransactionRatio)), maxPoints: -5, raw: rai.failedTransactionRatio },
+    { label: 'Debt Stress', score: Math.min(0, Math.max(-5, rai.debtStress)), maxPoints: -5, raw: rai.debtStress },
+    { label: 'Fraud Indicators', score: Math.min(0, Math.max(-5, rai.fraudIndicators)), maxPoints: -5, raw: rai.fraudIndicators },
+  ];
+  const score = breakdown.reduce((sum, item) => sum + item.score, 0);
+  return { score: Number(score.toFixed(2)), breakdown };
+}
+
+export function calculateDTI(dti: DataTrustIndex) {
+  const breakdown: ExplainabilityComponent[] = [
+    { label: 'GST Completeness', score: (dti.gstCompleteness * 0.20), maxPoints: 20, raw: dti.gstCompleteness },
+    { label: 'UPI Continuity', score: (dti.upiContinuity * 0.20), maxPoints: 20, raw: dti.upiContinuity },
+    { label: 'Bank Statement Coverage', score: (dti.bankStatementCoverage * 0.20), maxPoints: 20, raw: dti.bankStatementCoverage },
+    { label: 'EPFO Consistency', score: (dti.epfoConsistency * 0.20), maxPoints: 20, raw: dti.epfoConsistency },
+    { label: 'Data Verification Status', score: (dti.dataVerificationStatus * 0.20), maxPoints: 20, raw: dti.dataVerificationStatus },
+  ];
+  const score = breakdown.reduce((sum, item) => sum + item.score, 0);
+  return { score: Number(score.toFixed(2)), breakdown };
+}
+
+export function getBusinessHealthClassification(score: number): string {
+  if (score >= 90) return 'Excellent Business Health';
   if (score >= 75) return 'Growth Ready';
-  if (score >= 60) return 'Standard Eligible';
-  if (score >= 40) return 'Limited Exposure';
-  return 'Manual Review';
+  if (score >= 60) return 'Healthy Business';
+  if (score >= 40) return 'Moderate Risk';
+  return 'High Risk';
 }
 
-export function getUnderwritingDecision(score: number): 'Approvable' | 'Conditional' | 'Review Required' {
-  if (score >= 75) return 'Approvable';
-  if (score >= 40) return 'Conditional';
-  return 'Review Required';
+export function getHealthColor(score: number): string {
+  if (score >= 90) return '#10B981'; // emerald-500
+  if (score >= 75) return '#3B82F6'; // blue-500
+  if (score >= 60) return '#14B8A6'; // teal-500
+  if (score >= 40) return '#F59E0B'; // amber-500
+  return '#EF4444'; // red-500
 }
 
-export function getRiskLevel(score: number): 'Minimal' | 'Low' | 'Medium' | 'High' | 'Critical' {
-  if (score >= 90) return 'Minimal';
-  if (score >= 75) return 'Low';
-  if (score >= 60) return 'Medium';
-  if (score >= 40) return 'High';
-  return 'Critical';
+export function getPortfolioSegment(score: number): string {
+  if (score >= 80) return 'Prime MSME';
+  if (score >= 60) return 'Emerging MSME';
+  if (score >= 40) return 'Standard Portfolio';
+  return 'High Risk Portfolio';
 }
 
-export function getLendingRecommendation(score: number): string {
-  if (score >= 90) return 'Low Risk Lending';
-  if (score >= 75) return 'Growth Lending';
-  if (score >= 60) return 'Standard Lending';
-  if (score >= 40) return 'Limited Exposure';
-  return 'Manual Review Required';
+export function getRecommendedProduct(score: number): string {
+  if (score >= 90) return 'Prime Business Loan / Overdraft';
+  if (score >= 75) return 'Prime Working Capital Loan';
+  if (score >= 60) return 'Working Capital Loan';
+  if (score >= 40) return 'Business Term Loan';
+  return 'Micro Business Loan (Review)';
 }
 
-export function getRecommendedCreditLimit(score: number): string {
-  for (const cfg of CREDIT_LIMIT_CONFIG) {
-    if (score >= cfg.minScore) return cfg.limit;
-  }
-  return 'Manual Review Required';
+export function getProbabilityOfDefault(score: number): string {
+  if (score >= 90) return `${(1.2 - (score - 90) * 0.07).toFixed(1)}%`;
+  if (score >= 75) return `${(2.5 - (score - 75) * 0.08).toFixed(1)}%`;
+  if (score >= 60) return `${(4.5 - (score - 60) * 0.13).toFixed(1)}%`;
+  if (score >= 40) return `${(7.5 - (score - 40) * 0.15).toFixed(1)}%`;
+  return `${Math.min(25.0, 7.6 + (40 - score) * 0.4).toFixed(1)}%`;
 }
 
-export function calculateDataConfidence(flags: DataSourceFlags): number {
-  const total = Object.keys(flags).length;
-  const available = Object.values(flags).filter(Boolean).length;
-  return Math.round((available / total) * 100);
-}
-
-// ─── Positive / Negative Contributors ─────────────────────────────────────────
-export function getPositiveContributors(breakdown: ScoreBreakdownItem[]): Contributor[] {
-  return breakdown
-    .filter(b => !b.isRisk)
-    .sort((a, b) => b.earnedPoints - a.earnedPoints)
-    .slice(0, 3)
-    .map(b => {
-      let desc = '';
-      if (b.earnedPoints >= b.maxPoints * 0.8)      desc = `Excellent ${b.label.toLowerCase()} performance`;
-      else if (b.earnedPoints >= b.maxPoints * 0.6)  desc = `Strong ${b.label.toLowerCase()} indicators`;
-      else                                           desc = `Moderate ${b.label.toLowerCase()} contribution`;
-      return { label: b.label, impact: b.earnedPoints, description: desc };
-    });
-}
-
-export function getNegativeContributors(breakdown: ScoreBreakdownItem[]): Contributor[] {
-  const negatives: Contributor[] = [];
-  const risk = breakdown.find(b => b.isRisk);
-  if (risk && risk.earnedPoints < 0) {
-    negatives.push({
-      label: 'Risk Indicators',
-      impact: risk.earnedPoints,
-      description: `Elevated risk signals (${risk.rawScore}/100)`,
-    });
-  }
-  const weakPositives = breakdown
-    .filter(b => !b.isRisk)
-    .sort((a, b) => a.earnedPoints - b.earnedPoints)
-    .slice(0, 2)
-    .map(b => ({
-      label: b.label,
-      impact: b.earnedPoints,
-      description: `Weak ${b.label.toLowerCase()} (only +${b.earnedPoints.toFixed(1)} of max ${b.maxPoints})`,
-    }));
-  return [...negatives, ...weakPositives].slice(0, 3);
-}
-
-// ─── Underwriting Workbench Explanations ──────────────────────────────────────
-export function getWhyBankShouldLend(breakdown: ScoreBreakdownItem[]): string[] {
-  return breakdown
-    .filter(b => !b.isRisk && b.earnedPoints >= b.maxPoints * 0.7)
-    .sort((a, b) => b.earnedPoints - a.earnedPoints)
-    .slice(0, 3)
-    .map(b => {
-      if (b.key === 'cashFlowHealth') return "Strong operational cash flow ensures highly robust repayment capacity.";
-      if (b.key === 'complianceScore') return "Flawless compliance record reduces regulatory and legal lending friction.";
-      if (b.key === 'businessStability') return "Established business history supports long-term operational stability.";
-      return `Solid contribution from ${b.label.toLowerCase()} (+${b.earnedPoints.toFixed(1)} pts) strengthens risk posture.`;
-    });
-}
-
-export function generateExplanation(
-  scores: MSMEScores,
-  breakdown: ScoreBreakdownItem[],
-  score: number,
-  lendingRecommendation: string,
+// Dynamic Credit Limit Engine
+export function calculateDynamicCreditLimit(
+  averageMonthlyInflow: number,
+  cashFlowStability: number,
+  riskMultiplier: number,
+  repaymentCapacity: number
 ): string {
-  return `The business scores ${score.toFixed(2)} on the Credit Confidence index. Cash flow stands at ${scores.cashFlowHealth}/100 and compliance score at ${scores.complianceScore}/100, which are major anchors of creditworthiness. Risk is monitored at ${scores.riskIndicators}/100. recommended for ${lendingRecommendation}.`;
+  // Formula: Average Monthly Inflow * 12 * (CashFlowStability / 100) * (RepaymentCapacity / 100) * (RiskMultiplier)
+  const baseAnnualInflow = averageMonthlyInflow * 12;
+  const cfFactor = cashFlowStability / 100;
+  const rcFactor = repaymentCapacity / 100;
+  
+  let rawLimit = baseAnnualInflow * cfFactor * rcFactor * riskMultiplier;
+  
+  if (rawLimit < 50000) return 'Manual Review Required';
+  
+  // Round to nearest 50,000
+  const roundedLimit = Math.round(rawLimit / 50000) * 50000;
+  
+  // Format to Indian Rupee (₹XX,XX,XXX)
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(roundedLimit);
 }
 
-// ─── Aggregate processor ──────────────────────────────────────────────────────
-export function processHealthAssessment(scores: MSMEScores, dataFlags: DataSourceFlags): HealthResult {
-  const cce = calculateCreditConfidenceScore(scores);
-  const status = getLendingEligibilityStatus(cce.score);
-  const decision = getUnderwritingDecision(cce.score);
-  const riskLevel = getRiskLevel(cce.score);
-  const recommendedCreditLimit = getRecommendedCreditLimit(cce.score);
-  const dataConfidenceScore = calculateDataConfidence(dataFlags);
-  const positiveContributors = getPositiveContributors(cce.breakdown);
-  const negativeContributors = getNegativeContributors(cce.breakdown);
-  const whyBankShouldLend = getWhyBankShouldLend(cce.breakdown);
+export function generateImprovementRecommendations(
+  bhiBreakdown: ExplainabilityComponent[],
+  raiBreakdown: ExplainabilityComponent[]
+): ImprovementRecommendation[] {
+  const recommendations: ImprovementRecommendation[] = [];
 
-  // Score limit rationale
-  let scoreRange = '0 - 39';
-  if (cce.score >= 90) scoreRange = '90 - 100';
-  else if (cce.score >= 80) scoreRange = '80 - 89';
-  else if (cce.score >= 70) scoreRange = '70 - 79';
-  else if (cce.score >= 60) scoreRange = '60 - 69';
-  else if (cce.score >= 50) scoreRange = '50 - 59';
+  const weakBhi = [...bhiBreakdown].sort((a, b) => (a.score / a.maxPoints) - (b.score / b.maxPoints))[0];
+  if (weakBhi && (weakBhi.score / weakBhi.maxPoints) < 0.7) {
+    recommendations.push({
+      label: `Improve ${weakBhi.label}`,
+      expectedScoreImprovement: Math.round(weakBhi.maxPoints - weakBhi.score),
+      expectedCreditLimitImprovement: '+15%',
+      description: `Optimizing ${weakBhi.label.toLowerCase()} can significantly raise your base Health Index.`
+    });
+  }
 
-  const creditLimitRationale = {
-    scoreRange,
-    riskCategory: `${riskLevel} Risk`,
-    lendingCategory: getLendingRecommendation(cce.score),
-  };
+  const highestRisk = [...raiBreakdown].sort((a, b) => a.score - b.score)[0];
+  if (highestRisk && highestRisk.score < -1) {
+    recommendations.push({
+      label: `Mitigate ${highestRisk.label}`,
+      expectedScoreImprovement: Math.abs(Math.round(highestRisk.score)),
+      expectedCreditLimitImprovement: '+10%',
+      description: `Reducing ${highestRisk.label.toLowerCase()} will lower your risk deductions.`
+    });
+  }
 
-  // Top positive factors list
-  const topPos = positiveContributors.map(c => c.label.toLowerCase()).slice(0, 2).join(' and ');
-  const worstNeg = negativeContributors.map(c => c.label.toLowerCase()).slice(0, 1).join('');
+  if (recommendations.length === 0) {
+    recommendations.push({
+      label: 'Maintain Consistent Growth',
+      expectedScoreImprovement: 2,
+      expectedCreditLimitImprovement: '+5%',
+      description: 'Your metrics are highly optimal. Maintain current trajectory.'
+    });
+  }
 
-  const decisionExplanation = {
-    qualification: `The MSME qualifies for underwriting based on strong performance in ${topPos || 'operational metrics'} which present highly favorable lending attributes.`,
-    remainingRisks: worstNeg 
-      ? `Lenders should note that risks are concentrated in ${worstNeg}, which contributed negative weight to the score.`
-      : "No outstanding risk vectors were highlighted during the primary credit evaluation.",
-    recommendedExposure: `We recommend capping lending exposure at ${recommendedCreditLimit} under standard monitoring covenants, consistent with the ${status} profile.`
-  };
+  return recommendations;
+}
 
-  const explanation = generateExplanation(scores, cce.breakdown, cce.score, creditLimitRationale.lendingCategory);
+export function processHealthAssessment(
+  bhi: BusinessHealthIndex,
+  rai: RiskAdjustmentIndex,
+  dti: DataTrustIndex,
+  averageMonthlyInflow: number
+): HealthResult {
+  const bhiResult = calculateBHI(bhi);
+  const raiResult = calculateRAI(rai);
+  const dtiResult = calculateDTI(dti);
+
+  const finalScore = Math.max(0, Math.min(100, bhiResult.score + raiResult.score));
+
+  // Compute multipliers for credit limit
+  const riskMultiplier = Math.max(0.1, (100 + raiResult.score) / 100);
+  const recommendedCreditExposure = calculateDynamicCreditLimit(
+    averageMonthlyInflow,
+    bhi.cashFlowHealth, // Use as stability proxy
+    riskMultiplier,
+    bhi.revenueQuality // Use as repayment capacity proxy
+  );
 
   return {
-    scoreBreakdown: cce.breakdown,
-    positiveTotal: cce.positiveTotal,
-    riskPenalty: cce.riskPenalty,
-    score: cce.score,
-    status,
-    lendingRecommendation: creditLimitRationale.lendingCategory,
-    recommendedCreditLimit,
-    decision,
-    riskLevel,
-    lendingEligibilityStatus: status,
-    whyBankShouldLend,
-    creditLimitRationale,
-    decisionExplanation,
-    dataConfidenceScore,
-    positiveContributors,
-    negativeContributors,
-    explanation,
+    bhiScore: bhiResult.score,
+    raiScore: raiResult.score,
+    dtiScore: dtiResult.score,
+    finalScore: finalScore,
+
+    businessHealth: getBusinessHealthClassification(finalScore),
+    probabilityOfDefault: getProbabilityOfDefault(finalScore),
+    portfolioSegment: getPortfolioSegment(finalScore),
+    recommendedProduct: getRecommendedProduct(finalScore),
+    recommendedCreditExposure,
+    healthColor: getHealthColor(finalScore),
+
+    explainability: {
+      bhiBreakdown: bhiResult.breakdown,
+      raiBreakdown: raiResult.breakdown,
+      dtiBreakdown: dtiResult.breakdown,
+      improvementRecommendations: generateImprovementRecommendations(bhiResult.breakdown, raiResult.breakdown)
+    }
   };
 }
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 2: PORTFOLIO IMPACT & PD ENGINE
+// ═══════════════════════════════════════════════════════════
+
+export function calculatePortfolioImpact(finalScore: number): PortfolioImpactAssessment {
+  let pd: number;
+  let riskBand: string;
+
+  if (finalScore >= 90) {
+    pd = 1.0 + (100 - finalScore) * 0.1;
+    riskBand = 'Very Low Risk';
+  } else if (finalScore >= 75) {
+    pd = 2.0 + (90 - finalScore) * 0.2;
+    riskBand = 'Low Risk';
+  } else if (finalScore >= 60) {
+    pd = 5.0 + (75 - finalScore) * 0.33;
+    riskBand = 'Moderate Risk';
+  } else if (finalScore >= 40) {
+    pd = 10.0 + (60 - finalScore) * 0.5;
+    riskBand = 'Elevated Risk';
+  } else {
+    pd = 20.0 + (40 - finalScore) * 0.5;
+    riskBand = 'High Risk';
+  }
+
+  pd = Math.round(pd * 10) / 10;
+
+  let expectedPortfolioImpact: string;
+  let impactColor: string;
+  if (pd < 5) {
+    expectedPortfolioImpact = 'Positive Portfolio Addition';
+    impactColor = '#10B981';
+  } else if (pd <= 10) {
+    expectedPortfolioImpact = 'Neutral Portfolio Impact';
+    impactColor = '#F59E0B';
+  } else {
+    expectedPortfolioImpact = 'Elevated Portfolio Risk';
+    impactColor = '#EF4444';
+  }
+
+  return {
+    probabilityOfDefault: pd,
+    pdDisplay: `${pd.toFixed(1)}%`,
+    riskBand,
+    portfolioSegment: getPortfolioSegment(finalScore),
+    expectedPortfolioImpact,
+    impactColor
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 2: FINANCIAL INCLUSION ASSESSMENT
+// ═══════════════════════════════════════════════════════════
+
+export function assessFinancialInclusion(dti: DataTrustIndex): FinancialInclusionAssessment {
+  const dataAvailable = (dti.gstCompleteness > 0 || dti.upiContinuity > 0 || dti.bankStatementCoverage > 0 || dti.epfoConsistency > 0);
+  const assessmentComplete = dataAvailable && (dti.dataVerificationStatus >= 50);
+
+  const sourcesUsed: string[] = [];
+  if (dti.gstCompleteness > 0) sourcesUsed.push('GST');
+  if (dti.upiContinuity > 0) sourcesUsed.push('UPI');
+  if (dti.bankStatementCoverage > 0) sourcesUsed.push('Bank');
+  if (dti.epfoConsistency > 0) sourcesUsed.push('EPFO');
+
+  return {
+    traditionalCreditHistory: 'Not Available',
+    alternateDataAssessment: assessmentComplete ? 'Completed' : 'Pending',
+    creditVisibility: assessmentComplete ? 'Enabled' : 'Disabled',
+    assessmentMethod: sourcesUsed.join(' + '),
+    inclusionBadge: 'New-To-Credit MSME',
+    inclusionStatus: assessmentComplete ? 'Credit Visibility Enabled' : 'Assessment Pending'
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 2: FRAUD INTELLIGENCE SENTINEL
+// ═══════════════════════════════════════════════════════════
+
+export function detectFraudAnomalies(
+  bhi: BusinessHealthIndex,
+  rai: RiskAdjustmentIndex,
+  extractedData: Record<string, any>
+): FraudIntelligence {
+  const anomalies: FraudAnomaly[] = [];
+  const passedChecks: string[] = [];
+
+  const gst = extractedData.gst || {};
+  const upi = extractedData.upi || {};
+  const bank = extractedData.bank || {};
+  const epfo = extractedData.epfo || {};
+
+  // Check 1: GST Turnover vs UPI Inflow Discrepancy
+  if (gst.turnover && upi.annualInflow) {
+    const ratio = Math.abs(gst.turnover - upi.annualInflow) / gst.turnover;
+    if (ratio > 0.5) {
+      anomalies.push({
+        type: 'Revenue Discrepancy',
+        severity: 'High',
+        description: `GST-declared turnover and UPI settlement inflows differ by ${(ratio * 100).toFixed(0)}%. Cross-verification recommended.`,
+        dataSource: 'GST + UPI'
+      });
+    } else if (ratio > 0.3) {
+      anomalies.push({
+        type: 'Revenue Variance',
+        severity: 'Medium',
+        description: `${(ratio * 100).toFixed(0)}% variance between GST turnover and UPI inflows detected.`,
+        dataSource: 'GST + UPI'
+      });
+    } else {
+      passedChecks.push('GST-UPI Revenue Consistency Verified');
+    }
+  } else {
+    passedChecks.push('GST-UPI Revenue Consistency (Insufficient Data)');
+  }
+
+  // Check 2: Sudden Headcount Spike
+  if (epfo.employeeGrowth && epfo.employeeGrowth > 50) {
+    anomalies.push({
+      type: 'Headcount Anomaly',
+      severity: 'Medium',
+      description: `EPFO records show ${epfo.employeeGrowth}% YoY headcount growth — unusually high for MSME segment.`,
+      dataSource: 'EPFO'
+    });
+  } else {
+    passedChecks.push('EPFO Headcount Growth Pattern Normal');
+  }
+
+  // Check 3: Bank Balance vs Revenue Plausibility
+  if (bank.averageBalance && gst.turnover) {
+    const monthlyTurnover = gst.turnover / 12;
+    const balanceRatio = bank.averageBalance / monthlyTurnover;
+    if (balanceRatio < 0.02) {
+      anomalies.push({
+        type: 'Liquidity Mismatch',
+        severity: 'High',
+        description: 'Average bank balance is disproportionately low relative to declared monthly turnover.',
+        dataSource: 'Bank + GST'
+      });
+    } else {
+      passedChecks.push('Bank Balance-Revenue Ratio Plausible');
+    }
+  } else {
+    passedChecks.push('Bank Balance-Revenue Check (Insufficient Data)');
+  }
+
+  // Check 4: High UPI Failure Rate
+  if (upi.failedTransactions && upi.failedTransactions > 5) {
+    anomalies.push({
+      type: 'Transaction Failure Pattern',
+      severity: upi.failedTransactions > 10 ? 'High' : 'Medium',
+      description: `UPI failed transaction rate of ${upi.failedTransactions}% exceeds acceptable threshold of 5%.`,
+      dataSource: 'UPI'
+    });
+  } else {
+    passedChecks.push('UPI Transaction Failure Rate Within Limits');
+  }
+
+  // Check 5: GST Compliance Gaps
+  if (gst.compliance && gst.compliance < 60) {
+    anomalies.push({
+      type: 'Compliance Gap',
+      severity: 'Medium',
+      description: `GST filing compliance at ${gst.compliance}% indicates potential missing or late filings.`,
+      dataSource: 'GST'
+    });
+  } else {
+    passedChecks.push('GST Filing Compliance Adequate');
+  }
+
+  // Check 6: Debt Stress vs Revenue
+  if (rai.debtStress <= -4 && bhi.cashFlowHealth < 50) {
+    anomalies.push({
+      type: 'Debt Overload Risk',
+      severity: 'High',
+      description: 'High EMI burden combined with weak cash flow health raises repayment risk.',
+      dataSource: 'Bank + RAI'
+    });
+  } else {
+    passedChecks.push('Debt-to-Cashflow Ratio Sustainable');
+  }
+
+  // Calculate overall risk score
+  let riskScore = 0;
+  anomalies.forEach(a => {
+    if (a.severity === 'High') riskScore += 30;
+    else if (a.severity === 'Medium') riskScore += 15;
+    else riskScore += 5;
+  });
+  riskScore = Math.min(100, riskScore);
+
+  let riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  if (riskScore >= 70) riskLevel = 'Critical';
+  else if (riskScore >= 40) riskLevel = 'High';
+  else if (riskScore >= 15) riskLevel = 'Medium';
+  else riskLevel = 'Low';
+
+  return {
+    overallRiskScore: riskScore,
+    riskLevel,
+    anomalies,
+    passedChecks
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 2: CASHFLOW RUNWAY PREDICTOR
+// ═══════════════════════════════════════════════════════════
+
+export function predictCashflowRunway(
+  extractedData: Record<string, any>,
+  recommendedCreditLimit: string
+): CashflowRunway {
+  const bank = extractedData.bank || {};
+  const gst = extractedData.gst || {};
+  const upi = extractedData.upi || {};
+
+  // Estimate monthly burn from bank outflows
+  const monthlyRevenue = (gst.turnover || 12000000) / 12;
+  const avgBalance = bank.averageBalance || 500000;
+  
+  // Estimate burn as ~75% of revenue for operating MSMEs
+  const estimatedMonthlyBurn = monthlyRevenue * 0.75;
+  
+  // Current reserves = average balance + receivables buffer
+  const currentReserves = avgBalance + (upi.annualInflow || 0) / 24;
+
+  // Runway = reserves / monthly burn
+  const runwayMonths = estimatedMonthlyBurn > 0 ? Math.round((currentReserves / estimatedMonthlyBurn) * 10) / 10 : 12;
+
+  // Parse credit limit for projected runway
+  let creditAmount = 0;
+  const limitMatch = recommendedCreditLimit.replace(/[₹,]/g, '').match(/[\d]+/);
+  if (limitMatch) {
+    creditAmount = parseInt(limitMatch[0], 10);
+  }
+  const projectedReserves = currentReserves + creditAmount;
+  const projectedRunwayMonths = estimatedMonthlyBurn > 0 ? Math.round((projectedReserves / estimatedMonthlyBurn) * 10) / 10 : 18;
+
+  // Determine burn trend
+  let burnTrend: 'Increasing' | 'Stable' | 'Decreasing';
+  const growth = gst.growth || 0;
+  if (growth > 15) burnTrend = 'Increasing';
+  else if (growth < -5) burnTrend = 'Decreasing';
+  else burnTrend = 'Stable';
+
+  // Health status
+  let healthStatus: string;
+  if (runwayMonths >= 6) healthStatus = 'Healthy Operating Runway';
+  else if (runwayMonths >= 3) healthStatus = 'Adequate Runway — Monitor';
+  else healthStatus = 'Critical — Immediate Action Required';
+
+  return {
+    currentMonthlyBurn: Math.round(estimatedMonthlyBurn),
+    currentReserves: Math.round(currentReserves),
+    runwayMonths: Math.min(24, runwayMonths),
+    projectedRunwayMonths: Math.min(36, projectedRunwayMonths),
+    burnTrend,
+    healthStatus
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 2: UNDERWRITING DECISION OBJECT
+// ═══════════════════════════════════════════════════════════
+
+export function generateUnderwritingDecision(
+  results: HealthResult,
+  portfolioImpact: PortfolioImpactAssessment,
+  inclusion: FinancialInclusionAssessment,
+  consentStatus: string,
+  fraud: FraudIntelligence,
+  runway: CashflowRunway
+): UnderwritingDecision {
+  const assessmentId = `IDBI-CCE-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+
+  return {
+    assessmentId,
+    assessmentTimestamp: new Date().toISOString(),
+    finalScore: Math.round(results.finalScore),
+    businessHealthIndex: results.bhiScore,
+    riskAdjustmentIndex: results.raiScore,
+    dataTrustIndex: results.dtiScore,
+    probabilityOfDefault: portfolioImpact.probabilityOfDefault,
+    portfolioImpact: portfolioImpact.expectedPortfolioImpact,
+    inclusionStatus: inclusion.inclusionStatus,
+    consentStatus,
+    recommendedProduct: results.recommendedProduct,
+    recommendedLimit: results.recommendedCreditExposure,
+    fraudRiskLevel: fraud.riskLevel,
+    cashflowRunwayMonths: runway.runwayMonths,
+    ecosystemReadiness: {
+      aa: true,
+      ocen: true,
+      uli: true
+    }
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 2: OCEN LOAN OFFER GENERATOR
+// ═══════════════════════════════════════════════════════════
+
+export function generateLoanOffer(decision: UnderwritingDecision) {
+  return {
+    loanOfferId: `OCEN-${Date.now().toString(36).toUpperCase().slice(-8)}`,
+    lenderCode: 'IDBI-MSME',
+    timestamp: new Date().toISOString(),
+    borrowerAssessment: {
+      assessmentId: decision.assessmentId,
+      creditScore: decision.finalScore,
+      probabilityOfDefault: `${decision.probabilityOfDefault}%`,
+      riskClassification: decision.fraudRiskLevel === 'Low' ? 'Standard' : 'Enhanced Due Diligence'
+    },
+    loanTerms: {
+      product: decision.recommendedProduct,
+      sanctionedAmount: decision.recommendedLimit,
+      tenure: decision.finalScore >= 75 ? '36 months' : '24 months',
+      interestRate: decision.finalScore >= 90 ? '9.5% p.a.' :
+                    decision.finalScore >= 75 ? '11.0% p.a.' :
+                    decision.finalScore >= 60 ? '13.5% p.a.' : '16.0% p.a.',
+      processingFee: '1% of sanctioned amount',
+      repaymentMode: 'Monthly EMI via Auto-Debit'
+    },
+    conditions: [
+      'Subject to KYC verification',
+      'Valid GST registration mandatory',
+      'Business vintage minimum 12 months',
+      decision.fraudRiskLevel !== 'Low' ? 'Enhanced verification required due to data anomalies' : 'Standard verification applicable'
+    ].filter(Boolean),
+    ecosystemMeta: {
+      ocenVersion: '2.0',
+      protocol: 'OCEN-MSME-WCL',
+      uliCompatible: true,
+      aaConsent: decision.consentStatus === 'Approved'
+    }
+  };
+}
+

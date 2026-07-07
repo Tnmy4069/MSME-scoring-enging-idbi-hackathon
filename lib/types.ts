@@ -1,12 +1,27 @@
-export interface MSMEScores {
-  businessActivity: number;
-  cashFlowHealth: number;
-  complianceScore: number;
-  transactionBehaviour: number;
-  businessStability: number;
-  networkStrength: number;
-  growthPotential: number;
-  riskIndicators: number;
+export interface BusinessHealthIndex {
+  revenueQuality: number;       // 20%
+  cashFlowHealth: number;       // 25%
+  complianceGovernance: number; // 15%
+  growthPotential: number;      // 15%
+  operationalStability: number; // 15%
+  businessNetworkStrength: number; // 10%
+}
+
+export interface RiskAdjustmentIndex {
+  revenueVolatility: number;
+  customerConcentration: number;
+  supplierDependency: number;
+  failedTransactionRatio: number;
+  debtStress: number;
+  fraudIndicators: number;
+}
+
+export interface DataTrustIndex {
+  gstCompleteness: number;
+  upiContinuity: number;
+  bankStatementCoverage: number;
+  epfoConsistency: number;
+  dataVerificationStatus: number;
 }
 
 export interface DataSourceFlags {
@@ -17,61 +32,114 @@ export interface DataSourceFlags {
   itr: boolean;
 }
 
-export interface ScoreBreakdownItem {
-  key: string;
+export interface ExplainabilityComponent {
   label: string;
+  score: number;
   maxPoints: number;
-  earnedPoints: number;
-  rawScore: number;
-  isRisk: boolean;
+  raw: number;
 }
 
-export interface Contributor {
+export interface ImprovementRecommendation {
   label: string;
-  impact: number;
+  expectedScoreImprovement: number;
+  expectedCreditLimitImprovement: string;
   description: string;
 }
 
 export interface HealthResult {
-  // Score composition
-  scoreBreakdown: ScoreBreakdownItem[];
-  positiveTotal: number;
-  riskPenalty: number;
+  bhiScore: number;
+  raiScore: number;
+  dtiScore: number;
+  finalScore: number;
 
-  // Final outputs
-  score: number;
-  status: string; // Legacy
-  lendingRecommendation: string; // Legacy
-  recommendedCreditLimit: string;
+  businessHealth: string;
+  probabilityOfDefault: string;
+  portfolioSegment: string;
+  recommendedProduct: string;
+  recommendedCreditExposure: string;
+  healthColor: string;
   
-  // Underwriting Workbench specific additions
-  decision: 'Approvable' | 'Conditional' | 'Review Required';
-  riskLevel: 'Minimal' | 'Low' | 'Medium' | 'High' | 'Critical';
-  lendingEligibilityStatus: 'Premium Eligible' | 'Growth Ready' | 'Standard Eligible' | 'Limited Exposure' | 'Manual Review';
-  whyBankShouldLend: string[];
-  creditLimitRationale: {
-    scoreRange: string;
-    riskCategory: string;
-    lendingCategory: string;
+  explainability: {
+    bhiBreakdown: ExplainabilityComponent[];
+    raiBreakdown: ExplainabilityComponent[];
+    dtiBreakdown: ExplainabilityComponent[];
+    improvementRecommendations: ImprovementRecommendation[];
   };
-  decisionExplanation: {
-    qualification: string;
-    remainingRisks: string;
-    recommendedExposure: string;
-  };
-
-  // Data confidence
-  dataConfidenceScore: number;
-
-  // Contributors
-  positiveContributors: Contributor[];
-  negativeContributors: Contributor[];
-
-  // Explainability
-  explanation: string;
-
-  // Future-ready fields
-  requestedLoanAmount?: number;
-  approvableLimit?: number;
-  decisionCode?: 'APPROVED' | 'REJECTED' | 'MANUAL_REVIEW';
 }
+
+// ─── PHASE 2: CONSENT MANAGEMENT ───
+export interface ConsentRecord {
+  consentStatus: 'Approved' | 'Pending' | 'Revoked';
+  consentTimestamp: string;
+  consentVersion: string;
+  dataSources: string[];
+}
+
+// ─── PHASE 2: FINANCIAL INCLUSION ───
+export interface FinancialInclusionAssessment {
+  traditionalCreditHistory: 'Available' | 'Not Available';
+  alternateDataAssessment: 'Completed' | 'Pending' | 'Failed';
+  creditVisibility: 'Enabled' | 'Disabled';
+  assessmentMethod: string;
+  inclusionBadge: string;
+  inclusionStatus: string;
+}
+
+// ─── PHASE 2: PORTFOLIO IMPACT ───
+export interface PortfolioImpactAssessment {
+  probabilityOfDefault: number;
+  pdDisplay: string;
+  riskBand: string;
+  portfolioSegment: string;
+  expectedPortfolioImpact: string;
+  impactColor: string;
+}
+
+// ─── PHASE 2: FRAUD INTELLIGENCE ───
+export interface FraudAnomaly {
+  type: string;
+  severity: 'Low' | 'Medium' | 'High';
+  description: string;
+  dataSource: string;
+}
+
+export interface FraudIntelligence {
+  overallRiskScore: number;
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  anomalies: FraudAnomaly[];
+  passedChecks: string[];
+}
+
+// ─── PHASE 2: CASHFLOW RUNWAY ───
+export interface CashflowRunway {
+  currentMonthlyBurn: number;
+  currentReserves: number;
+  runwayMonths: number;
+  projectedRunwayMonths: number;
+  burnTrend: 'Increasing' | 'Stable' | 'Decreasing';
+  healthStatus: string;
+}
+
+// ─── PHASE 2: UNDERWRITING DECISION OBJECT ───
+export interface UnderwritingDecision {
+  assessmentId: string;
+  assessmentTimestamp: string;
+  finalScore: number;
+  businessHealthIndex: number;
+  riskAdjustmentIndex: number;
+  dataTrustIndex: number;
+  probabilityOfDefault: number;
+  portfolioImpact: string;
+  inclusionStatus: string;
+  consentStatus: string;
+  recommendedProduct: string;
+  recommendedLimit: string;
+  fraudRiskLevel: string;
+  cashflowRunwayMonths: number;
+  ecosystemReadiness: {
+    aa: boolean;
+    ocen: boolean;
+    uli: boolean;
+  };
+}
+
