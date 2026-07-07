@@ -81,7 +81,7 @@ The JSON object MUST follow this exact schema:
 Ensure all insights are professional, based strictly on the provided data, and do not contain any markdown formatting.`;
 
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
