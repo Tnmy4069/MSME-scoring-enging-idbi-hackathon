@@ -12,7 +12,7 @@ export function IdbiLogo() {
   return (
     <div className="flex items-center gap-2.5">
       <img
-        src="https://www.logoshape.com/wp-content/uploads/2024/09/idbi-icon-vector_logoshape.png"
+        src="/logo.png"
         alt="IDBI Logo"
         className="w-7 h-7 flex-shrink-0 object-contain"
       />
